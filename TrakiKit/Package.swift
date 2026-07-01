@@ -10,6 +10,11 @@ let package = Package(
         .library(name: "TrakiKit", targets: ["TrakiKit"]),
     ],
     targets: [
-        .target(name: "TrakiKit"),
+        .target(
+            name: "TrakiKit",
+            resources: [
+                .process("Resources"),
+            ]
+        ),
     ]
 )

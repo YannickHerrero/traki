@@ -1,4 +1,5 @@
 import SwiftUI
+import TrakiKit
 
 /// Temporary placeholder shown until the app shell (tab bar + screens) lands in Phase 2.
 struct RootView: View {
@@ -19,10 +20,10 @@ struct RootView: View {
                     .frame(width: 48, height: 48)
 
                 Text("Traki")
-                    .font(.system(size: 34, weight: .heavy, design: .rounded))
+                    .font(.barlowSemi(34, .heavy, relativeTo: .largeTitle))
 
                 Text("Time tracker for language learners")
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.barlow(15, .medium))
                     .foregroundStyle(.secondary)
             }
         }
