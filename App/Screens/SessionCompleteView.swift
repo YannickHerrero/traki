@@ -8,6 +8,7 @@ import TrakiKit
 struct SessionCompleteView: View {
     @Environment(\.palette) private var palette
     @Environment(SessionController.self) private var controller
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     var onAgain: () -> Void = {}
@@ -67,9 +68,11 @@ struct SessionCompleteView: View {
         ZStack {
             Circle()
                 .stroke(mode.baseColor, lineWidth: 3)
-                .scaleEffect(ringExpand ? 1.9 : 0.96)
-                .opacity(ringExpand ? 0 : 0.55)
-                .animation(.easeOut(duration: 1.8).repeatForever(autoreverses: false), value: ringExpand)
+                .scaleEffect(reduceMotion ? 1.25 : (ringExpand ? 1.9 : 0.96))
+                .opacity(reduceMotion ? 0.4 : (ringExpand ? 0 : 0.55))
+                .animation(reduceMotion ? nil
+                           : .easeOut(duration: 1.8).repeatForever(autoreverses: false),
+                           value: ringExpand)
             Circle()
                 .fill(mode.baseColor)
                 .overlay(

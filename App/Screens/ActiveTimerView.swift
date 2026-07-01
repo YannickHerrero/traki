@@ -8,6 +8,7 @@ import TrakiKit
 struct ActiveTimerView: View {
     @Environment(\.palette) private var palette
     @Environment(SessionController.self) private var controller
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     /// Persist-and-complete, supplied by the root coordinator (Phase 6).
@@ -57,8 +58,8 @@ struct ActiveTimerView: View {
             Circle()
                 .fill(mode.baseColor)
                 .frame(width: 9, height: 9)
-                .opacity(controller.isRunning ? (pulsing ? 1 : 0.3) : 0.5)
-                .animation(controller.isRunning
+                .opacity(controller.isRunning ? (reduceMotion ? 1 : (pulsing ? 1 : 0.3)) : 0.5)
+                .animation(controller.isRunning && !reduceMotion
                            ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true)
                            : .default, value: pulsing)
             Text(controller.isRunning ? "TRACKING" : "PAUSED")
@@ -98,7 +99,10 @@ struct ActiveTimerView: View {
                     .font(.barlowSemi(96, .heavy))
                     .tracking(-2)
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                     .foregroundStyle(mode.ink(dark: dark))
+                    .accessibilityLabel("Elapsed \(TrakiFormat.duration(elapsed))")
                 Text("reaches ")
                     .font(.barlow(14, .regular))
                     .foregroundStyle(palette.faint)

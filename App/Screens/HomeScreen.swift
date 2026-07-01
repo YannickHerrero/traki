@@ -55,6 +55,8 @@ struct HomeScreen: View {
         .padding(.vertical, 7)
         .padding(.horizontal, 12)
         .background(LearningMode.flashcards.baseColor.opacity(0.18), in: .capsule)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(streak) day streak")
     }
 
     // MARK: Log a past session
@@ -132,6 +134,8 @@ struct HomeScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("mode-\(mode.rawValue)")
+        .accessibilityLabel("\(mode.displayName), \(TrakiFormat.duration(seconds)) today")
+        .accessibilityHint("Starts a \(mode.displayName) session")
     }
 
     // MARK: Resume hero
