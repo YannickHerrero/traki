@@ -15,9 +15,15 @@ final class WidgetGalleryUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Widget gallery"].waitForExistence(timeout: 10))
         XCTAssertGreaterThanOrEqual(app.otherElements.matching(identifier: "widget-tile").count, 1)
 
-        let shot = XCTAttachment(screenshot: app.screenshot())
-        shot.name = "widgets"
-        shot.lifetime = .keepAlways
-        add(shot)
+        func snapshot(_ name: String) {
+            let shot = XCTAttachment(screenshot: app.screenshot())
+            shot.name = name
+            shot.lifetime = .keepAlways
+            add(shot)
+        }
+
+        snapshot("widgets-top")
+        app.swipeUp()
+        snapshot("widgets-bottom")
     }
 }

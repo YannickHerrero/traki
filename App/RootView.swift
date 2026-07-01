@@ -56,7 +56,13 @@ private struct TrackingHost: View {
             }
         }
         .animation(.snappy(duration: 0.3), value: controller.phase)
-        .onAppear(perform: consumePendingStart)
+        .onAppear {
+            controller.liveActivitiesEnabled = settings.showLiveActivity
+            consumePendingStart()
+        }
+        .onChange(of: settings.showLiveActivity) { _, enabled in
+            controller.liveActivitiesEnabled = enabled
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { consumePendingStart() }
         }

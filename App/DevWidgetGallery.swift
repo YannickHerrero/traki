@@ -29,10 +29,23 @@ struct DevWidgetGallery: View {
                 tile(width: 76, height: 76, palette: palette, background: palette.text.opacity(0.12)) {
                     TodayRingView(snapshot: .sample)
                 }
+
+                Text("Live Activity")
+                    .font(.barlow(12, .bold)).foregroundStyle(palette.faint)
+                tile(width: 338, height: 88, palette: palette, background: Color(hex: "1E212A")) {
+                    LiveActivityLockScreenView(state: sampleActivityState)
+                }
             }
             .padding(24)
         }
         .background(palette.bg.ignoresSafeArea())
+    }
+
+    /// ~24:18 of Listening, matching the prototype's Live Activity mock.
+    private var sampleActivityState: TrakiActivityAttributes.ContentState {
+        TrakiActivityAttributes.ContentState(
+            mode: .listening, isRunning: true,
+            segmentStart: Date().addingTimeInterval(-1458), baseElapsed: 0)
     }
 
     private func tile<Content: View>(width: CGFloat, height: CGFloat, palette: Palette,
