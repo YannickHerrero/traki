@@ -10,10 +10,22 @@ struct RootView: View {
 
     var body: some View {
         TrakiThemedRoot(theme: settings.theme) {
-            TrackingHost()
-                .environment(controller)
-                .environment(logSheet)
+            #if DEBUG
+            if CommandLine.arguments.contains("-widgetGallery") {
+                DevWidgetGallery()
+            } else {
+                appContent
+            }
+            #else
+            appContent
+            #endif
         }
+    }
+
+    private var appContent: some View {
+        TrackingHost()
+            .environment(controller)
+            .environment(logSheet)
     }
 }
 

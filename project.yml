@@ -38,6 +38,13 @@ targets:
       - path: App
         excludes:
           - "*.entitlements"
+      # Widget view code is compiled into the app too, only so a DEBUG in-app
+      # gallery can render it for verification. The @main bundle stays excluded.
+      - path: Widgets
+        excludes:
+          - "*.entitlements"
+          - "Info.plist"
+          - "TrakiWidgetBundle.swift"
     dependencies:
       - package: TrakiKit
       - target: TrakiWidgets       # embed the widget extension
