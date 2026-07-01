@@ -61,7 +61,10 @@ struct HomeScreen: View {
 
     private func logPastButton(defaultMode: LearningMode) -> some View {
         Button {
-            logSheet.openNew(defaultMode: defaultMode)
+            // Default to the last mode, but only if it's still an active category.
+            let mode = settings.isActive(defaultMode) ? defaultMode
+                : (settings.orderedActiveModes.first ?? defaultMode)
+            logSheet.openNew(defaultMode: mode)
         } label: {
             HStack(spacing: 9) {
                 Image(systemName: "plus")
