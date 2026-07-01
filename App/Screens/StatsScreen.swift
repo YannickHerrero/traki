@@ -23,6 +23,7 @@ struct StatsScreen: View {
                 periodPicker
                 totalHeader(stats)
                 last7DaysCard(agg.lastDays(7))
+                breakdownCard(agg.breakdown(period))
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -79,6 +80,38 @@ struct StatsScreen: View {
                             .foregroundStyle(today ? palette.text : palette.faint)
                     }
                     .frame(maxWidth: .infinity)
+                }
+            }
+        }
+    }
+
+    // MARK: By category
+
+    private func breakdownCard(_ items: [ModeBreakdownItem]) -> some View {
+        let maxSeconds = Double(max(1, items.map(\.seconds).max() ?? 1))
+        return statCard("By category") {
+            VStack(spacing: 14) {
+                ForEach(items) { item in
+                    VStack(spacing: 6) {
+                        HStack {
+                            Text(item.mode.displayName)
+                                .font(.barlow(14, .semibold))
+                                .foregroundStyle(item.mode.ink(dark: palette.isDark))
+                            Spacer()
+                            Text(TrakiFormat.duration(item.seconds))
+                                .font(.barlow(14, .bold)).monospacedDigit()
+                                .foregroundStyle(palette.muted)
+                        }
+                        GeometryReader { geo in
+                            let fraction = item.seconds == 0 ? 0 : max(0.03, Double(item.seconds) / maxSeconds)
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(palette.track)
+                                Capsule().fill(item.mode.baseColor)
+                                    .frame(width: geo.size.width * fraction)
+                            }
+                        }
+                        .frame(height: 9)
+                    }
                 }
             }
         }
