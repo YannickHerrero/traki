@@ -35,6 +35,7 @@ private struct TrackingHost: View {
     @Environment(SessionController.self) private var controller
     @Environment(AppSettings.self) private var settings
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
@@ -55,6 +56,19 @@ private struct TrackingHost: View {
             }
         }
         .animation(.snappy(duration: 0.3), value: controller.phase)
+        .onAppear(perform: consumePendingStart)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { consumePendingStart() }
+        }
+    }
+
+    /// If a widget/App-Intent quick-start is pending, drop straight into the
+    /// Active Timer for that mode (without interrupting a running session).
+    private func consumePendingStart() {
+        guard !controller.isActive, controller.phase != .completed else { return }
+        if let mode = TrakiIntentBridge.consumePendingStart() {
+            controller.start(mode)
+        }
     }
 
     /// Ends the session and writes it to the store so every derived total —
