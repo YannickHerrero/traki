@@ -16,6 +16,7 @@ struct HomeScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 header(streak: agg.currentStreak(), now: now)
+                goalStrip(agg)
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -47,6 +48,31 @@ struct HomeScreen: View {
         .padding(.vertical, 7)
         .padding(.horizontal, 12)
         .background(LearningMode.flashcards.baseColor.opacity(0.18), in: .capsule)
+    }
+
+    // MARK: Goal strip
+
+    private func goalStrip(_ agg: SessionAggregator) -> some View {
+        let pct = agg.goalPercent(dailyGoalMinutes: settings.dailyGoalMinutes)
+        return HStack(spacing: 12) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(palette.track)
+                    Capsule()
+                        .fill(LinearGradient(
+                            colors: [LearningMode.sentenceMining.baseColor,
+                                     LearningMode.reading.baseColor],
+                            startPoint: .leading, endPoint: .trailing))
+                        .frame(width: geo.size.width * CGFloat(pct) / 100)
+                }
+            }
+            .frame(height: 9)
+
+            Text("\(TrakiFormat.duration(agg.todaySeconds)) · \(pct)%")
+                .font(.nunito(12.5, .heavy))
+                .foregroundStyle(palette.faint)
+                .fixedSize()
+        }
     }
 
     private func greeting(_ now: Date) -> String {
