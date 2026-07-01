@@ -7,6 +7,7 @@ import TrakiKit
 struct HomeScreen: View {
     @Environment(\.palette) private var palette
     @Environment(AppSettings.self) private var settings
+    @Environment(SessionController.self) private var controller
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     var body: some View {
@@ -98,7 +99,7 @@ struct HomeScreen: View {
 
     private func modeCard(_ mode: LearningMode, seconds: Int) -> some View {
         Button {
-            // Wired to start the session in Phase 4.
+            controller.start(mode)
         } label: {
             VStack(alignment: .leading, spacing: 0) {
                 ZStack {
@@ -131,7 +132,7 @@ struct HomeScreen: View {
 
     private func resumeHero(mode: LearningMode, todaySeconds: Int) -> some View {
         Button {
-            // Wired to start the session in Phase 4.
+            controller.start(mode)
         } label: {
             HStack(spacing: 15) {
                 ZStack {
@@ -203,6 +204,7 @@ struct HomeScreen: View {
     SampleData.seedIfEmpty(container.mainContext)
     return HomeScreen()
         .environment(AppSettings())
+        .environment(SessionController())
         .environment(\.palette, .light)
         .modelContainer(container)
 }
