@@ -1,3 +1,4 @@
+import ActivityKit
 import Foundation
 import Observation
 
@@ -21,6 +22,11 @@ public final class SessionController {
     private var accumulated: TimeInterval = 0
     private var segmentStart: Date?
 
+    /// Whether to show a Lock-Screen Live Activity for running sessions. The app
+    /// keeps this in sync with the Settings toggle.
+    public var liveActivitiesEnabled = true
+    private var activity: Activity<TrakiActivityAttributes>?
+
     public struct CompletedSession: Sendable {
         public let mode: LearningMode
         public let seconds: Int
@@ -39,6 +45,7 @@ public final class SessionController {
         segmentStart = date
         completed = nil
         phase = .running
+        startActivity()
     }
 
     public func pause(at date: Date = Date()) {
@@ -46,12 +53,14 @@ public final class SessionController {
         accumulated += date.timeIntervalSince(segment)
         segmentStart = nil
         phase = .paused
+        updateActivity()
     }
 
     public func resume(at date: Date = Date()) {
         guard phase == .paused else { return }
         segmentStart = date
         phase = .running
+        updateActivity()
     }
 
     public func togglePause(at date: Date = Date()) {
@@ -75,16 +84,49 @@ public final class SessionController {
         completed = done
         segmentStart = nil
         phase = .completed
+        endActivity()
         return done
     }
 
     /// Returns to idle (after the Complete screen is dismissed).
     public func clear() {
+        endActivity()
         mode = nil
         sessionStart = nil
         segmentStart = nil
         accumulated = 0
         completed = nil
         phase = .idle
+    }
+
+    // MARK: Live Activity
+
+    private func currentContentState() -> TrakiActivityAttributes.ContentState {
+        TrakiActivityAttributes.ContentState(
+            mode: mode ?? .flashcards,
+            isRunning: phase == .running,
+            segmentStart: segmentStart ?? Date(),
+            baseElapsed: accumulated)
+    }
+
+    private func startActivity() {
+        guard liveActivitiesEnabled, activity == nil,
+              ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        let attributes = TrakiActivityAttributes(sessionId: UUID())
+        let content = ActivityContent(state: currentContentState(), staleDate: nil)
+        activity = try? Activity.request(attributes: attributes, content: content)
+    }
+
+    private func updateActivity() {
+        guard let activity else { return }
+        let content = ActivityContent(state: currentContentState(), staleDate: nil)
+        Task { await activity.update(content) }
+    }
+
+    private func endActivity() {
+        guard let activity else { return }
+        let content = ActivityContent(state: currentContentState(), staleDate: nil)
+        Task { await activity.end(content, dismissalPolicy: .immediate) }
+        self.activity = nil
     }
 }
