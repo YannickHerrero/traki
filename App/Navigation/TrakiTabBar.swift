@@ -28,6 +28,7 @@ struct TrakiTabBar: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("tab-\(tab.rawValue)")
             }
         }
         .padding(.top, 10)
