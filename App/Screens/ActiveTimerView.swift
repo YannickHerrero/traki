@@ -141,6 +141,7 @@ struct ActiveTimerView: View {
                 .background(mode.baseColor, in: .rect(cornerRadius: 20, style: .continuous))
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("stop-save")
         }
     }
 

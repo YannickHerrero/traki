@@ -58,6 +58,19 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.yannickherrero.traki.tests
         GENERATE_INFOPLIST_FILE: true
 
+  TrakiUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: Traki
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yannickherrero.traki.uitests
+        GENERATE_INFOPLIST_FILE: true
+        TEST_TARGET_NAME: Traki
+
 schemes:
   Traki:
     build:
@@ -69,3 +82,4 @@ schemes:
       config: Debug
       targets:
         - TrakiTests
+        - TrakiUITests

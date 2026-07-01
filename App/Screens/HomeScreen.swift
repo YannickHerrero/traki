@@ -126,6 +126,7 @@ struct HomeScreen: View {
             .background(mode.baseColor.opacity(0.15), in: .rect(cornerRadius: 24, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("mode-\(mode.rawValue)")
     }
 
     // MARK: Resume hero

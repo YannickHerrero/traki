@@ -119,6 +119,7 @@ struct SessionCompleteView: View {
                     .background(palette.text, in: .rect(cornerRadius: 19, style: .continuous))
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("done")
         }
     }
 }
