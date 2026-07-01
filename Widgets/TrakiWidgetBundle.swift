@@ -7,5 +7,6 @@ import WidgetKit
 struct TrakiWidgetBundle: WidgetBundle {
     var body: some Widget {
         TodayWidget()
+        QuickStartWidget()
     }
 }
