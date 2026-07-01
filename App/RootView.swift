@@ -5,11 +5,13 @@ import TrakiKit
 struct RootView: View {
     @Environment(AppSettings.self) private var settings
     @State private var controller = SessionController()
+    @State private var logSheet = LogSheetController()
 
     var body: some View {
         TrakiThemedRoot(theme: settings.theme) {
             TrackingHost()
                 .environment(controller)
+                .environment(logSheet)
         }
     }
 }

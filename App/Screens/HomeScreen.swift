@@ -8,6 +8,7 @@ struct HomeScreen: View {
     @Environment(\.palette) private var palette
     @Environment(AppSettings.self) private var settings
     @Environment(SessionController.self) private var controller
+    @Environment(LogSheetController.self) private var logSheet
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     var body: some View {
@@ -22,7 +23,7 @@ struct HomeScreen: View {
                 goalStrip(agg)
                 resumeHero(mode: lastMode, todaySeconds: todayByMode[lastMode] ?? 0)
                 modeGrid(todayByMode)
-                logPastButton
+                logPastButton(defaultMode: lastMode)
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -58,9 +59,9 @@ struct HomeScreen: View {
 
     // MARK: Log a past session
 
-    private var logPastButton: some View {
+    private func logPastButton(defaultMode: LearningMode) -> some View {
         Button {
-            // Opens the log sheet in Phase 5.
+            logSheet.openNew(defaultMode: defaultMode)
         } label: {
             HStack(spacing: 9) {
                 Image(systemName: "plus")
@@ -77,6 +78,7 @@ struct HomeScreen: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("log-past")
     }
 
     // MARK: Mode grid
@@ -206,6 +208,7 @@ struct HomeScreen: View {
     return HomeScreen()
         .environment(AppSettings())
         .environment(SessionController())
+        .environment(LogSheetController())
         .environment(\.palette, .light)
         .modelContainer(container)
 }
