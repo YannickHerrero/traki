@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;background:#Eceae4;-webkit-font-smoothing:antialiased;}
+  doc-page:not(:defined){visibility:hidden;}
+  .spec{font-family:'Barlow',system-ui,sans-serif;color:#26242B;font-size:12pt;line-height:1.6;}
+  .spec h1,.spec h2,.spec h3{font-family:'Barlow Semi Condensed','Barlow';color:#17151B;}
+</style>
+</helmet>
+
+<x-import component-from-global-scope="doc-page" from="./doc-page.js" size="letter" margin="0.9in" hint-size="100%,100%">
+
+  <div slot="header" style="display:flex;justify-content:space-between;align-items:center;font-family:'Barlow';font-size:9.5pt;letter-spacing:.3px;color:#9a978f;padding-bottom:6px;border-bottom:1px solid #e4e1d9;">
+    <span style="font-weight:700;color:#6f6c64;">TRAKI</span>
+    <span>Product Specification · Draft v1.0</span>
+  </div>
+  <div slot="footer" style="display:flex;justify-content:space-between;align-items:center;font-family:'Barlow';font-size:9pt;color:#a7a49c;padding-top:6px;border-top:1px solid #e4e1d9;">
+    <span>Confidential — internal product spec</span>
+    <span>Language-learning time tracker</span>
+  </div>
+
+  <div class="spec">
+
+    <!-- ============ COVER ============ -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:26px;margin-top:30px;">
+      <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#F6A93B,#5AA0FF);"></div>
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:15pt;letter-spacing:.5px;color:#17151B;">TRAKI</span>
+    </div>
+
+    <div style="font-family:'Barlow';font-weight:700;font-size:10pt;letter-spacing:3px;text-transform:uppercase;color:#B98BFF;margin-bottom:10px;">Product Specification</div>
+    <h1 style="font-weight:800;font-size:40pt;line-height:1;letter-spacing:-1px;margin:0 0 14px;">The one-tap time tracker for language learners.</h1>
+    <p style="font-size:14pt;line-height:1.5;color:#57545c;max-width:88%;margin:0 0 26px;">Traki measures the time learners invest across the four activities that actually build fluency — and it is designed so that opening the app and starting a session take a single tap.</p>
+
+    <div style="display:flex;gap:22px;font-size:10.5pt;color:#8a877f;border-top:1px solid #e4e1d9;border-bottom:1px solid #e4e1d9;padding:14px 0;margin-bottom:34px;">
+      <div><span style="display:block;font-weight:700;color:#26242B;">Platform</span>iOS (iPhone)</div>
+      <div><span style="display:block;font-weight:700;color:#26242B;">Audience</span>Independent language learners</div>
+      <div><span style="display:block;font-weight:700;color:#26242B;">Prepared</span>July 2026</div>
+      <div><span style="display:block;font-weight:700;color:#26242B;">Status</span>Concept / design review</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e4e1d9;border-radius:14px;padding:22px 24px;margin-bottom:8px;">
+      <div style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;margin-bottom:8px;">In one paragraph</div>
+      <p style="margin:0;color:#454249;">Learners open the app, tap one of four study modes, and a stopwatch begins immediately. When they finish, they stop and see the session added to their day. A statistics dashboard turns those sessions into streaks, trends and a consistency heatmap, while widgets let them start and monitor a session without ever opening the app. Time they forgot to track can be added or corrected by hand. The product's north star is simple: <b style="color:#17151B;">make tracking so frictionless that learners actually do it every day.</b></p>
+    </div>
+
+    <!-- ============ 1. PRINCIPLES ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">01</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">Guiding principles</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 20px;"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="border-left:3px solid #F6A93B;padding-left:14px;"><div style="font-weight:700;color:#17151B;">Speed to start</div><div style="color:#57545c;font-size:11pt;">One tap from opening the app to a running timer. Every extra step is treated as a bug.</div></div>
+      <div style="border-left:3px solid #B98BFF;padding-left:14px;"><div style="font-weight:700;color:#17151B;">One activity at a time</div><div style="color:#57545c;font-size:11pt;">A single stopwatch runs at once, so the learner is never unsure what is being counted.</div></div>
+      <div style="border-left:3px solid #35D0A5;padding-left:14px;"><div style="font-weight:700;color:#17151B;">Honest numbers</div><div style="color:#57545c;font-size:11pt;">Totals reflect real study time, and manual logging exists to fill in what the timer missed.</div></div>
+      <div style="border-left:3px solid #5AA0FF;padding-left:14px;"><div style="font-weight:700;color:#17151B;">Progress at a glance</div><div style="color:#57545c;font-size:11pt;">Streaks, daily goal and trends are visible without digging through menus.</div></div>
+      <div style="border-left:3px solid #F6A93B;padding-left:14px;"><div style="font-weight:700;color:#17151B;">Track without opening</div><div style="color:#57545c;font-size:11pt;">Widgets can start a session and show a live timer from the Lock and Home Screens.</div></div>
+      <div style="border-left:3px solid #B98BFF;padding-left:14px;"><div style="font-weight:700;color:#17151B;">Effortless correction</div><div style="color:#57545c;font-size:11pt;">Any entry can be edited or removed later, so a mistake never discourages logging.</div></div>
+    </div>
+
+    <!-- ============ 2. MODES ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">02</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">The four learning modes</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 16px;"></div>
+    <p style="color:#57545c;margin:0 0 18px;">Every tracked session belongs to exactly one mode. Each mode keeps a consistent color throughout the app, so learners recognise it instantly in cards, charts and history.</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="width:12px;height:12px;border-radius:4px;background:#F6A93B;flex:none;"></span><span style="font-weight:700;font-size:12.5pt;color:#C77E12;width:150px;flex:none;">Flashcards</span><span style="color:#57545c;font-size:11pt;">Reviewing vocabulary and grammar decks — typically spaced-repetition study.</span></div>
+      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="width:12px;height:12px;border-radius:4px;background:#B98BFF;flex:none;"></span><span style="font-weight:700;font-size:12.5pt;color:#7E4FD0;width:150px;flex:none;">Listening</span><span style="color:#57545c;font-size:11pt;">Podcasts, shows, music and audio immersion in the target language.</span></div>
+      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="width:12px;height:12px;border-radius:4px;background:#35D0A5;flex:none;"></span><span style="font-weight:700;font-size:12.5pt;color:#1B9E78;width:150px;flex:none;">Reading</span><span style="color:#57545c;font-size:11pt;">Books, articles, subtitles and any text-based study.</span></div>
+      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="width:12px;height:12px;border-radius:4px;background:#5AA0FF;flex:none;"></span><span style="font-weight:700;font-size:12.5pt;color:#2F79D6;width:150px;flex:none;">Sentence Mining</span><span style="color:#57545c;font-size:11pt;">Harvesting new words and example sentences from native material.</span></div>
+    </div>
+
+    <!-- ============ 3. SCREENS ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">03</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">Screens</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 20px;"></div>
+
+    <!-- Home -->
+    <div style="break-inside:avoid;margin-bottom:22px;">
+      <h3 style="font-weight:800;font-size:15pt;margin:0 0 4px;">3.1 · Home</h3>
+      <p style="margin:0 0 10px;color:#57545c;"><b style="color:#17151B;">Purpose —</b> the launchpad. It answers one question first: “what do you want to study right now?” and gets out of the way.</p>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">What's on it</div>
+      <ul style="margin:0 0 10px;padding-left:20px;color:#454249;">
+        <li>A greeting, the current day-streak, and a slim daily-goal progress bar with today's total.</li>
+        <li>A prominent <b>Resume</b> card that repeats the learner's most recent mode in one tap.</li>
+        <li>Four mode cards — Flashcards, Listening, Reading, Sentence Mining — each showing today's time in that mode.</li>
+        <li>A <b>Log a past session</b> button for adding time after the fact.</li>
+      </ul>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">Interactions</div>
+      <ul style="margin:0;padding-left:20px;color:#454249;">
+        <li>Tapping any mode card <b>starts the stopwatch immediately</b> and moves to the Active Timer.</li>
+        <li>Tapping Resume starts the last mode used.</li>
+      </ul>
+    </div>
+
+    <!-- Timer -->
+    <div style="break-inside:avoid;margin-bottom:22px;">
+      <h3 style="font-weight:800;font-size:15pt;margin:0 0 4px;">3.2 · Active Timer</h3>
+      <p style="margin:0 0 10px;color:#57545c;"><b style="color:#17151B;">Purpose —</b> a calm, full-screen view for a session in progress, tinted with the mode's color.</p>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">What's on it</div>
+      <ul style="margin:0 0 10px;padding-left:20px;color:#454249;">
+        <li>A large running clock and the current mode, with a live “tracking” indicator.</li>
+        <li>A running projection of what today's total for that mode will reach.</li>
+      </ul>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">Interactions</div>
+      <ul style="margin:0;padding-left:20px;color:#454249;">
+        <li><b>Pause / Resume</b> to handle interruptions without losing the session.</li>
+        <li><b>Stop &amp; save</b> ends the session and opens the summary.</li>
+      </ul>
+    </div>
+
+    <!-- Complete -->
+    <div style="break-inside:avoid;margin-bottom:22px;">
+      <h3 style="font-weight:800;font-size:15pt;margin:0 0 4px;">3.3 · Session Complete</h3>
+      <p style="margin:0 0 10px;color:#57545c;"><b style="color:#17151B;">Purpose —</b> a short, rewarding confirmation that the time was captured.</p>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">What's on it</div>
+      <ul style="margin:0 0 10px;padding-left:20px;color:#454249;">
+        <li>The session length, the mode, and three quick stats: that mode's total today, the day's total, and the current streak.</li>
+      </ul>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">Interactions</div>
+      <ul style="margin:0;padding-left:20px;color:#454249;">
+        <li><b>Go again</b> immediately starts another session in the same mode.</li>
+        <li><b>Done</b> returns to Home.</li>
+      </ul>
+    </div>
+
+    <!-- Stats -->
+    <div style="break-inside:avoid;margin-bottom:22px;">
+      <h3 style="font-weight:800;font-size:15pt;margin:0 0 4px;">3.4 · Statistics</h3>
+      <p style="margin:0 0 10px;color:#57545c;"><b style="color:#17151B;">Purpose —</b> help learners understand their habits and see progress build over time.</p>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">What's on it</div>
+      <ul style="margin:0 0 10px;padding-left:20px;color:#454249;">
+        <li>A <b>Day / Month / Year</b> switch, with the total for the chosen period and how it compares to the previous one.</li>
+        <li>A <b>last-7-days recap</b> showing each day's time, split by mode.</li>
+        <li>A <b>breakdown by mode</b>, so learners see where their time really goes.</li>
+        <li>A <b>trend</b> line of daily study hours over recent weeks.</li>
+        <li>A <b>consistency heatmap</b> — one square per day — that rewards showing up.</li>
+      </ul>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">Interactions</div>
+      <ul style="margin:0;padding-left:20px;color:#454249;">
+        <li>Switching the period instantly updates the total, comparison and breakdown.</li>
+      </ul>
+    </div>
+
+    <!-- History -->
+    <div style="break-inside:avoid;margin-bottom:22px;">
+      <h3 style="font-weight:800;font-size:15pt;margin:0 0 4px;">3.5 · History</h3>
+      <p style="margin:0 0 10px;color:#57545c;"><b style="color:#17151B;">Purpose —</b> the complete, trustworthy record of every session, grouped by day.</p>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">What's on it</div>
+      <ul style="margin:0 0 10px;padding-left:20px;color:#454249;">
+        <li>Sessions listed newest-first under day headings, each showing mode, time of day and duration, with the day's total.</li>
+      </ul>
+      <div style="font-weight:700;font-size:10pt;letter-spacing:.5px;text-transform:uppercase;color:#8a877f;margin-bottom:6px;">Interactions</div>
+      <ul style="margin:0;padding-left:20px;color:#454249;">
+        <li><b>Press and hold any entry</b> to open its editor — change the mode or duration, or delete it. Totals everywhere update to match.</li>
+      </ul>
+    </div>
+
+    <!-- Settings -->
+    <div style="break-inside:avoid;margin-bottom:6px;">
+      <h3 style="font-weight:800;font-size:15pt;margin:0 0 4px;">3.6 · Settings</h3>
+      <p style="margin:0 0 10px;color:#57545c;"><b style="color:#17151B;">Purpose —</b> the small set of choices that personalise tracking.</p>
+      <ul style="margin:0;padding-left:20px;color:#454249;">
+        <li><b>Learning</b> — target language, daily goal, and which modes are active.</li>
+        <li><b>Appearance</b> — theme: Light, Dark, or System.</li>
+        <li><b>Tracking</b> — auto-pause when idle, show a Live Activity on the Lock Screen, and round sessions to the nearest minute.</li>
+      </ul>
+    </div>
+
+    <!-- ============ 4. LOGGING ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">04</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">Logging &amp; correcting time</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 18px;"></div>
+
+    <div style="break-inside:avoid;margin-bottom:18px;">
+      <h3 style="font-weight:800;font-size:14pt;margin:0 0 6px;">Log a past session</h3>
+      <p style="margin:0 0 8px;color:#57545c;">Learners often study away from their phone. From Home, “Log a past session” opens a sheet where they choose a mode, pick <b>Today</b> or <b>Yesterday</b>, and set a duration with simple −/+ steppers or quick-pick amounts. Saving adds the time to that day's totals and drops it into History.</p>
+    </div>
+
+    <div style="break-inside:avoid;">
+      <h3 style="font-weight:800;font-size:14pt;margin:0 0 6px;">Edit or delete an entry</h3>
+      <p style="margin:0;color:#57545c;">Pressing and holding an entry in History reopens the same sheet for that session, letting learners fix the mode or duration — or delete it outright. Because every total is derived from these entries, a single correction keeps the whole app accurate.</p>
+    </div>
+
+    <!-- ============ 5. WIDGETS ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">05</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">Widgets</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 16px;"></div>
+    <p style="color:#57545c;margin:0 0 18px;">Widgets carry the “track without opening the app” principle onto the Lock and Home Screens.</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="break-inside:avoid;display:flex;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="font-weight:700;color:#17151B;width:200px;flex:none;">Live Activity · Lock Screen</span><span style="color:#57545c;font-size:11pt;">Shows a session already running, with its live timer, so learners can glance at progress and stop it without unlocking into the app.</span></div>
+      <div style="break-inside:avoid;display:flex;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="font-weight:700;color:#17151B;width:200px;flex:none;">Lock Screen · circular</span><span style="color:#57545c;font-size:11pt;">A compact today-total ring plus quick-start buttons for jumping straight into a mode.</span></div>
+      <div style="break-inside:avoid;display:flex;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="font-weight:700;color:#17151B;width:200px;flex:none;">Home Screen · quick start</span><span style="color:#57545c;font-size:11pt;">A medium widget with all four modes as buttons — one tap begins a session.</span></div>
+      <div style="break-inside:avoid;display:flex;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="font-weight:700;color:#17151B;width:200px;flex:none;">Home Screen · this week</span><span style="color:#57545c;font-size:11pt;">A medium widget showing the weekly heatmap and total, for a motivating glance.</span></div>
+      <div style="break-inside:avoid;display:flex;gap:14px;background:#fff;border:1px solid #e4e1d9;border-radius:12px;padding:14px 18px;"><span style="font-weight:700;color:#17151B;width:200px;flex:none;">Home Screen · today</span><span style="color:#57545c;font-size:11pt;">A small widget with today's total, streak and goal progress.</span></div>
+    </div>
+
+    <!-- ============ 6. APPEARANCE ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">06</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">Appearance</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 16px;"></div>
+    <p style="color:#57545c;margin:0;">Appearance is set in Settings with a single choice of <b>Light</b>, <b>Dark</b>, or <b>System</b> — the last option follows the phone's own light/dark setting automatically. The default is System. Every screen and widget adapts, and the four mode colors stay recognisable in both themes.</p>
+
+    <!-- ============ 7. NAVIGATION ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">07</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">How it fits together</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 16px;"></div>
+    <p style="color:#57545c;margin:0 0 14px;">A bottom tab bar anchors the four everyday destinations. Tracking flows sit on top of them as focused, full-screen moments.</p>
+    <ul style="margin:0 0 14px;padding-left:20px;color:#454249;">
+      <li><b>Tab bar:</b> Home · Statistics · History · Settings — always one tap away.</li>
+      <li><b>Tracking flow:</b> Home → tap a mode → Active Timer → Stop → Session Complete → back to Home.</li>
+      <li><b>Sheets:</b> logging and editing slide up over the current screen and dismiss when done.</li>
+      <li><b>Widgets:</b> can launch a session or deep-link into the app from outside it.</li>
+    </ul>
+
+    <div style="background:#17151B;border-radius:14px;padding:20px 24px;color:#f4f2ec;break-inside:avoid;">
+      <div style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:12pt;letter-spacing:.5px;margin-bottom:12px;color:#cfc9bd;">THE CORE LOOP</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-family:'Barlow Semi Condensed';font-weight:700;font-size:12.5pt;">
+        <span style="background:#2b2930;padding:7px 14px;border-radius:8px;">Open</span><span style="color:#7a7770;">→</span>
+        <span style="background:#2b2930;padding:7px 14px;border-radius:8px;">Tap a mode</span><span style="color:#7a7770;">→</span>
+        <span style="background:#2b2930;padding:7px 14px;border-radius:8px;">Timer runs</span><span style="color:#7a7770;">→</span>
+        <span style="background:#2b2930;padding:7px 14px;border-radius:8px;">Stop &amp; save</span><span style="color:#7a7770;">→</span>
+        <span style="background:#2b2930;padding:7px 14px;border-radius:8px;">See progress</span>
+      </div>
+    </div>
+
+    <!-- ============ 8. FUTURE ============ -->
+    <div style="margin-top:40px;display:flex;align-items:baseline;gap:12px;">
+      <span style="font-family:'Barlow Semi Condensed';font-weight:800;font-size:13pt;color:#B98BFF;">08</span>
+      <h2 style="font-weight:800;font-size:22pt;margin:0;">Future considerations</h2>
+    </div>
+    <div style="height:2px;background:#17151B;width:46px;margin:12px 0 16px;"></div>
+    <p style="color:#57545c;margin:0 0 12px;">Ideas that extend the product without compromising its focus on effortless tracking:</p>
+    <ul style="margin:0;padding-left:20px;color:#454249;">
+      <li>An exact start-time picker when logging past sessions.</li>
+      <li>Per-mode daily goals, not just a single overall goal.</li>
+      <li>An Apple Watch complication to start and stop from the wrist.</li>
+      <li>A Focus-style auto-start that begins tracking when a learner opens their flashcard or reading app.</li>
+      <li>Support for multiple target languages, each with its own statistics.</li>
+    </ul>
+
+    <div style="margin-top:36px;padding-top:14px;border-top:1px solid #e4e1d9;font-size:9.5pt;color:#a7a49c;">End of specification · Traki · Draft v1.0</div>
+
+  </div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
