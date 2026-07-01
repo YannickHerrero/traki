@@ -24,6 +24,7 @@ struct StatsScreen: View {
                 totalHeader(stats)
                 last7DaysCard(agg.lastDays(7))
                 breakdownCard(agg.breakdown(period))
+                trendCard(agg.weeklyTrend(weeks: 8))
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -117,22 +118,47 @@ struct StatsScreen: View {
         }
     }
 
+    // MARK: Trend
+
+    private func trendCard(_ weekly: [Double]) -> some View {
+        panel {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Trend · daily hours")
+                        .font(.barlow(13, .bold)).foregroundStyle(palette.muted)
+                    Spacer()
+                    Text("8 weeks")
+                        .font(.barlow(12, .regular)).foregroundStyle(palette.faint)
+                }
+                .padding(.bottom, 12)
+                TrendLine(values: weekly, color: LearningMode.reading.baseColor)
+                    .frame(height: 110)
+            }
+        }
+    }
+
     // MARK: Shared card
 
     private func statCard<Content: View>(_ title: String,
                                          @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(title)
-                .font(.barlow(13, .bold))
-                .foregroundStyle(palette.muted)
-                .padding(.bottom, 16)
-            content()
+        panel {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title)
+                    .font(.barlow(13, .bold))
+                    .foregroundStyle(palette.muted)
+                    .padding(.bottom, 16)
+                content()
+            }
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(palette.panel, in: .rect(cornerRadius: 22, style: .continuous))
-        .shadow(color: palette.panelShadow.color, radius: palette.panelShadow.radius,
-                y: palette.panelShadow.y)
+    }
+
+    private func panel<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(palette.panel, in: .rect(cornerRadius: 22, style: .continuous))
+            .shadow(color: palette.panelShadow.color, radius: palette.panelShadow.radius,
+                    y: palette.panelShadow.y)
     }
 
     private func totalHeader(_ stats: PeriodStats) -> some View {
@@ -155,6 +181,50 @@ struct StatsScreen: View {
                 .padding(.bottom, 8)
             }
             Spacer(minLength: 0)
+        }
+    }
+}
+
+/// The daily-hours trend: a filled area under a smooth stroked line, scaled to
+/// the card width, mirroring the prototype's SVG polyline math.
+private struct TrendLine: View {
+    let values: [Double]
+    let color: Color
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let height = geo.size.height
+            let padX = 8.0, padY = 14.0
+            let maxValue = values.max() ?? 1
+            let minValue = values.min() ?? 0
+            let span = maxValue - minValue
+
+            let points: [CGPoint] = values.indices.map { i in
+                let x = padX + Double(i) / Double(max(1, values.count - 1)) * (width - 2 * padX)
+                let y = span == 0 ? height / 2
+                    : height - padY - (values[i] - minValue) / span * (height - 2 * padY)
+                return CGPoint(x: x, y: y)
+            }
+
+            ZStack {
+                Path { path in
+                    guard let first = points.first, let last = points.last else { return }
+                    path.move(to: CGPoint(x: first.x, y: height))
+                    points.forEach { path.addLine(to: $0) }
+                    path.addLine(to: CGPoint(x: last.x, y: height))
+                    path.closeSubpath()
+                }
+                .fill(LinearGradient(colors: [color.opacity(0.28), color.opacity(0)],
+                                     startPoint: .top, endPoint: .bottom))
+
+                Path { path in
+                    guard let first = points.first else { return }
+                    path.move(to: first)
+                    points.dropFirst().forEach { path.addLine(to: $0) }
+                }
+                .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+            }
         }
     }
 }
