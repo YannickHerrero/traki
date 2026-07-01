@@ -1,8 +1,10 @@
 # Traki
 
-**The one-tap time tracker for language learners.** Open the app, tap one of four study modes, and a stopwatch starts immediately. Stop to see the session added to your day; statistics turn those sessions into streaks, trends and a consistency heatmap. Widgets and a Live Activity let you start and monitor a session without opening the app.
+**The one-tap time tracker for language learners.** Open the app, tap one of four study modes, and a stopwatch starts immediately. Stop to see the session added to your day; statistics turn those sessions into streaks, trends and a consistency heatmap. Widgets, an App-Intent quick-start, and a Live Activity let you start and monitor a session without opening the app.
 
 Built natively in **SwiftUI**, faithfully reproducing the **"Playful Cards"** design from the original prototype (see [`reference/`](reference/)).
+
+![Home, Stats and the log sheet](reference/.thumbnail)
 
 ## The four learning modes
 
@@ -12,6 +14,20 @@ Built natively in **SwiftUI**, faithfully reproducing the **"Playful Cards"** de
 | Listening | `#B98BFF` | Podcasts, shows, music, audio immersion |
 | Reading | `#35D0A5` | Books, articles, subtitles, any text study |
 | Sentence Mining | `#5AA0FF` | Harvesting words + example sentences from native material |
+
+## Features
+
+- **Home (Playful Cards)** — greeting, day-streak, daily-goal bar, a resume hero for your last mode, four mode cards with today's time, and "Log a past session".
+- **Tracking flow** — immersive Active Timer (mode-tinted, live clock, projected daily total, pause/resume) → Session Complete (duration + three stats, Go again / Done).
+- **Logging & editing** — log a past session (mode, Today/Yesterday, ± stepper, quick-picks); press-and-hold any History entry to edit its mode/duration or delete it.
+- **History** — every session grouped by day, newest-first, with day totals.
+- **Statistics** — Day/Month/Year totals with change vs. the previous period, last-7-days stacked bars, by-mode breakdown, an 8-week trend line, and a 112-day consistency heatmap.
+- **Settings** — target language, daily goal, active categories; Light/Dark/System theme; auto-pause, Live Activity and round-to-minute toggles.
+- **Widgets** — Home small (today), Home medium (quick start, this-week heatmap), Lock Screen circular (today ring).
+- **App Intents** — widget quick-start buttons open the app straight into a running session.
+- **Live Activity + Dynamic Island** — a running session on the Lock Screen with a live-ticking clock and mode color.
+
+Everything is **derived from individual `Session` rows**, so adding, editing or deleting an entry keeps every total consistent — the product's core guarantee.
 
 ## Requirements
 
@@ -31,30 +47,46 @@ xcodebuild -project Traki.xcodeproj -scheme Traki \
   -destination 'platform=iOS Simulator,name=iPhone 16' build
 ```
 
+## Tests
+
+```sh
+xcodebuild test -project Traki.xcodeproj -scheme Traki \
+  -destination 'platform=iOS Simulator,name=iPhone 16'
+```
+
+- **Unit tests** (`Tests/`) cover the formatters and the aggregation layer (totals, streak edge cases, period delta, heatmap thresholds, history grouping).
+- **UI tests** (`UITests/`) drive the real app: the core tracking loop, logging, hold-to-edit, tab navigation, theme switching, the App-Intent quick-start path, and a rendered widget gallery.
+
+To eyeball the widgets and Live Activity without placing them on a Home Screen, launch with the DEBUG gallery flag:
+
+```sh
+xcrun simctl launch booted com.yannickherrero.traki -widgetGallery
+```
+
 ## Architecture
 
 Deployment target: **iOS 18.0** (the latest the installed toolchain builds). The design language targets iOS 26 / Liquid Glass; see **iOS 26 upgrade** below.
 
 | Target | Type | Role |
 |---|---|---|
-| `TrakiKit` | local Swift package | Shared core: `Session` model + SwiftData store (App Group), `LearningMode`, palette/theme, bundled fonts, formatters, aggregations, `SessionController`, `AppSettings`, Live Activity attributes, App Intents |
+| `TrakiKit` | local Swift package | Shared core: `Session` model + SwiftData store (App Group), `LearningMode`, palette/theme, bundled fonts, formatters, `SessionAggregator`, `SessionController`, `AppSettings`, `StartSessionIntent`, `TrakiActivityAttributes` |
 | `Traki` | iOS app | Tab bar + Home / Statistics / History / Settings, the tracking flow, and the log/edit sheet |
 | `TrakiWidgets` | widget extension | Home + Lock-Screen widgets, Live Activity + Dynamic Island |
 
-`TrakiKit` and `TrakiWidgets` are introduced in later build phases; see [the plan](#project-status).
+The app and the widget extension share one SwiftData store via the **App Group** `group.com.yannickherrero.traki`, so widgets read the same sessions. `TrakiStore` falls back to a local store when the entitlement is unavailable. After each write the app calls `WidgetCenter.reloadAllTimelines()`.
 
-Every total in the app is **derived from individual `Session` rows**, so adding, editing or deleting an entry keeps the whole app consistent — the product's core guarantee.
+Bundled fonts (all SIL OFL): **Nunito** (Playful home), **Barlow** (body/buttons), **Barlow Semi Condensed** (titles, clock, totals).
 
 ## iOS 26 upgrade
 
 The app is written **iOS-26-ready**. To promote it once **Xcode 26** is installed:
 
-1. Bump `options.deploymentTarget.iOS` to `"26.0"` in `project.yml` and `xcodegen generate`.
-2. Enable real Liquid Glass in the single `trakiGlass` view modifier (it renders standard materials below iOS 26).
+1. Bump `options.deploymentTarget.iOS` to `"26.0"` in `project.yml` (and `TrakiKit/Package.swift`), then `xcodegen generate`.
+2. Adopt the real Liquid Glass materials on the tab bar, sheets and overlays (currently standard `.ultraThinMaterial`).
 
-## Project status
+## Out of scope (v1)
 
-Built in small, atomic commits across phases: scaffolding → shared core → app shell → Home → tracking → logging → history → statistics → settings → widgets → App Intents → Live Activity → polish.
+Per the spec's roadmap: an exact start-time picker when logging, per-mode daily goals, an Apple Watch complication, Focus-style auto-start, and multiple target languages.
 
 ## Reference
 
