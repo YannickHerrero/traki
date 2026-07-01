@@ -12,11 +12,14 @@ struct HomeScreen: View {
     var body: some View {
         let now = Date()
         let agg = SessionAggregator(sessions: sessions.map(\.snapshot), now: now)
+        let todayByMode = agg.totalsByMode(onDayStarting: Calendar.current.startOfDay(for: now))
+        let lastMode = sessions.first?.mode ?? .listening
 
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 header(streak: agg.currentStreak(), now: now)
                 goalStrip(agg)
+                resumeHero(mode: lastMode, todaySeconds: todayByMode[lastMode] ?? 0)
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -48,6 +51,43 @@ struct HomeScreen: View {
         .padding(.vertical, 7)
         .padding(.horizontal, 12)
         .background(LearningMode.flashcards.baseColor.opacity(0.18), in: .capsule)
+    }
+
+    // MARK: Resume hero
+
+    private func resumeHero(mode: LearningMode, todaySeconds: Int) -> some View {
+        Button {
+            // Wired to start the session in Phase 4.
+        } label: {
+            HStack(spacing: 15) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(Color.white.opacity(0.22))
+                        .frame(width: 56, height: 56)
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("PICK UP WHERE YOU LEFT OFF")
+                        .font(.nunito(11.5, .bold))
+                        .tracking(0.6)
+                        .foregroundStyle(.white.opacity(0.82))
+                    Text(mode.displayName)
+                        .font(.nunito(25, .heavy))
+                        .foregroundStyle(.white)
+                    Text("\(TrakiFormat.duration(todaySeconds)) done today")
+                        .font(.nunito(13, .bold))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(22)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(mode.heroGradient, in: .rect(cornerRadius: 28, style: .continuous))
+            .shadow(color: mode.gradientPartner.opacity(0.35), radius: 12, y: 12)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Goal strip
