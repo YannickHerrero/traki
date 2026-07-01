@@ -22,6 +22,7 @@ struct StatsScreen: View {
 
                 periodPicker
                 totalHeader(stats)
+                last7DaysCard(agg.lastDays(7))
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -48,6 +49,57 @@ struct StatsScreen: View {
         }
         .padding(3)
         .background(palette.track, in: .rect(cornerRadius: 13, style: .continuous))
+    }
+
+    // MARK: Last 7 days
+
+    private func last7DaysCard(_ days: [DayBucket]) -> some View {
+        let maxTotal = Double(max(1, days.map(\.total).max() ?? 1))
+        let columnHeight = 118.0
+        return statCard("Last 7 days") {
+            HStack(alignment: .bottom, spacing: 8) {
+                ForEach(days) { day in
+                    let today = Calendar.current.isDateInToday(day.date)
+                    VStack(spacing: 7) {
+                        ZStack(alignment: .bottom) {
+                            Color.clear.frame(height: columnHeight)
+                            VStack(spacing: 0) {
+                                // Reversed so Flashcards sits at the bottom of the stack.
+                                ForEach(LearningMode.allCases.reversed()) { mode in
+                                    Rectangle()
+                                        .fill(mode.baseColor.opacity(today ? 1 : 0.82))
+                                        .frame(height: Double(day.seconds(mode)) / maxTotal * columnHeight)
+                                }
+                            }
+                            .frame(width: 26)
+                            .clipShape(.rect(cornerRadius: 6))
+                        }
+                        Text(day.date.formatted(.dateTime.weekday(.narrow)))
+                            .font(.barlow(11, .semibold))
+                            .foregroundStyle(today ? palette.text : palette.faint)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        }
+    }
+
+    // MARK: Shared card
+
+    private func statCard<Content: View>(_ title: String,
+                                         @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.barlow(13, .bold))
+                .foregroundStyle(palette.muted)
+                .padding(.bottom, 16)
+            content()
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(palette.panel, in: .rect(cornerRadius: 22, style: .continuous))
+        .shadow(color: palette.panelShadow.color, radius: palette.panelShadow.radius,
+                y: palette.panelShadow.y)
     }
 
     private func totalHeader(_ stats: PeriodStats) -> some View {
