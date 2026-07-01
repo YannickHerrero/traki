@@ -18,13 +18,15 @@ struct RootView: View {
 /// then Session Complete) above it.
 private struct TrackingHost: View {
     @Environment(SessionController.self) private var controller
+    @Environment(AppSettings.self) private var settings
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         ZStack {
             TabScaffold()
 
             if controller.isActive {
-                ActiveTimerView(onStop: { controller.stop() })
+                ActiveTimerView(onStop: stopAndSave)
                     .transition(.move(edge: .bottom))
                     .zIndex(1)
             }
@@ -38,5 +40,14 @@ private struct TrackingHost: View {
             }
         }
         .animation(.snappy(duration: 0.3), value: controller.phase)
+    }
+
+    /// Ends the session and writes it to the store so every derived total —
+    /// Home, Stats, History, widgets — updates from the same source.
+    private func stopAndSave() {
+        guard let done = controller.stop(roundToMinute: settings.roundToNearestMinute) else { return }
+        modelContext.insert(Session(mode: done.mode, startDate: done.startDate,
+                                    durationSeconds: done.seconds, isManual: false))
+        try? modelContext.save()
     }
 }
