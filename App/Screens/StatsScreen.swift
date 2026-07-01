@@ -25,6 +25,7 @@ struct StatsScreen: View {
                 last7DaysCard(agg.lastDays(7))
                 breakdownCard(agg.breakdown(period))
                 trendCard(agg.weeklyTrend(weeks: 8))
+                heatmapCard(agg.heatmap(days: 112))
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -115,6 +116,58 @@ struct StatsScreen: View {
                     }
                 }
             }
+        }
+    }
+
+    // MARK: Consistency heatmap
+
+    private func heatmapCard(_ cells: [HeatCell]) -> some View {
+        panel {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Consistency")
+                        .font(.barlow(13, .bold)).foregroundStyle(palette.muted)
+                    Spacer()
+                    legend
+                }
+                .padding(.bottom, 14)
+
+                // Column-major: 7 rows (weekday) × 16 columns (week), today bottom-right.
+                Grid(horizontalSpacing: 4, verticalSpacing: 4) {
+                    ForEach(0..<7, id: \.self) { row in
+                        GridRow {
+                            ForEach(Array(stride(from: row, to: cells.count, by: 7)), id: \.self) { index in
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(heatColor(cells[index].level))
+                                    .aspectRatio(1, contentMode: .fit)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var legend: some View {
+        HStack(spacing: 5) {
+            Text("less").font(.barlow(11, .regular)).foregroundStyle(palette.faint)
+            ForEach([0, 2, 3, 4], id: \.self) { level in
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(heatColor(level))
+                    .frame(width: 10, height: 10)
+            }
+            Text("more").font(.barlow(11, .regular)).foregroundStyle(palette.faint)
+        }
+    }
+
+    private func heatColor(_ level: Int) -> Color {
+        let green = LearningMode.reading.baseColor
+        switch level {
+        case 0: return palette.track
+        case 1: return green.opacity(0.35)
+        case 2: return green.opacity(0.55)
+        case 3: return green.opacity(0.75)
+        default: return green.opacity(0.95)
         }
     }
 
