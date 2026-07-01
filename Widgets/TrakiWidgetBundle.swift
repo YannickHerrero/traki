@@ -9,5 +9,6 @@ struct TrakiWidgetBundle: WidgetBundle {
         TodayWidget()
         QuickStartWidget()
         WeekWidget()
+        TodayRingWidget()
     }
 }
