@@ -6,6 +6,7 @@ import TrakiKit
 /// (newest-first) with each day's total. Hold an entry to edit or delete it.
 struct HistoryScreen: View {
     @Environment(\.palette) private var palette
+    @Environment(LogSheetController.self) private var logSheet
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     var body: some View {
@@ -48,6 +49,7 @@ struct HistoryScreen: View {
             VStack(spacing: 0) {
                 ForEach(Array(day.entries.enumerated()), id: \.element.id) { index, entry in
                     entryRow(entry)
+                        .onLongPressGesture(minimumDuration: 0.48) { edit(entry) }
                     if index < day.entries.count - 1 {
                         palette.hair.frame(height: 1)
                     }
@@ -83,6 +85,12 @@ struct HistoryScreen: View {
         .contentShape(.rect)
     }
 
+    /// Opens the edit sheet for the tapped entry's underlying session.
+    private func edit(_ entry: HistoryEntry) {
+        guard let session = sessions.first(where: { $0.id == entry.id }) else { return }
+        logSheet.openEdit(session)
+    }
+
     // MARK: Formatting
 
     private func dayLabel(_ date: Date) -> String {
@@ -104,6 +112,7 @@ struct HistoryScreen: View {
     let container = TrakiStore.makeContainer(inMemory: true)
     SampleData.seedIfEmpty(container.mainContext)
     return HistoryScreen()
+        .environment(LogSheetController())
         .environment(\.palette, .light)
         .modelContainer(container)
 }
