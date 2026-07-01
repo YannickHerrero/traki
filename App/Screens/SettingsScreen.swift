@@ -22,6 +22,7 @@ struct SettingsScreen: View {
                     .foregroundStyle(palette.text)
 
                 learningSection(settings)
+                appearanceSection(settings)
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -72,6 +73,47 @@ struct SettingsScreen: View {
 
     private func goalLabel(_ minutes: Int) -> String {
         minutes >= 60 ? TrakiFormat.duration(minutes * 60) : "\(minutes)m"
+    }
+
+    // MARK: Appearance
+
+    private func appearanceSection(_ settings: AppSettings) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            sectionHeader("Appearance")
+            card {
+                HStack(spacing: 12) {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(LearningMode.listening.baseColor)
+                        .frame(width: 28, height: 28)
+                        .overlay(Image(systemName: "paintbrush.fill")
+                            .font(.system(size: 13, weight: .bold)).foregroundStyle(.white))
+                    Text("Theme").font(.barlow(16, .regular)).foregroundStyle(palette.text)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 4)
+
+                HStack(spacing: 6) {
+                    ForEach(AppTheme.allCases) { option in
+                        let selected = settings.theme == option
+                        Button { settings.theme = option } label: {
+                            Text(option.label)
+                                .font(.nunito(14, .heavy))
+                                .foregroundStyle(selected ? .white : palette.muted)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(selected ? LearningMode.listening.baseColor : palette.track,
+                                            in: .rect(cornerRadius: 11, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("theme-\(option.rawValue)")
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+            }
+        }
     }
 
     // MARK: Building blocks
