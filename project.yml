@@ -45,3 +45,27 @@ targets:
         INFOPLIST_FILE: App/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+  TrakiTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - package: TrakiKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yannickherrero.traki.tests
+        GENERATE_INFOPLIST_FILE: true
+
+schemes:
+  Traki:
+    build:
+      targets:
+        Traki: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - TrakiTests
