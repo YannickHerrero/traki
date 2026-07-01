@@ -8,5 +8,6 @@ struct TrakiWidgetBundle: WidgetBundle {
     var body: some Widget {
         TodayWidget()
         QuickStartWidget()
+        WeekWidget()
     }
 }
