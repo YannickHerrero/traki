@@ -23,6 +23,13 @@ struct SettingsScreen: View {
 
                 learningSection(settings)
                 appearanceSection(settings)
+                trackingSection(settings)
+
+                Text("Traki · v\(TrakiKit.version)")
+                    .font(.barlow(12, .regular))
+                    .foregroundStyle(palette.dim)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 4)
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -114,6 +121,37 @@ struct SettingsScreen: View {
                 .padding(.bottom, 16)
             }
         }
+    }
+
+    // MARK: Tracking
+
+    private func trackingSection(_ settings: AppSettings) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            sectionHeader("Tracking")
+            card {
+                toggleRow("Auto-pause when idle",
+                          Binding(get: { settings.autoPauseWhenIdle },
+                                  set: { settings.autoPauseWhenIdle = $0 }))
+                separator
+                toggleRow("Live Activity on Lock Screen",
+                          Binding(get: { settings.showLiveActivity },
+                                  set: { settings.showLiveActivity = $0 }))
+                separator
+                toggleRow("Round sessions to the nearest minute",
+                          Binding(get: { settings.roundToNearestMinute },
+                                  set: { settings.roundToNearestMinute = $0 }))
+            }
+        }
+    }
+
+    private func toggleRow(_ title: String, _ isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 12) {
+            Text(title).font(.barlow(16, .regular)).foregroundStyle(palette.text)
+            Spacer()
+            Toggle("", isOn: isOn).labelsHidden().tint(LearningMode.reading.baseColor)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 
     // MARK: Building blocks
