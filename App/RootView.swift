@@ -28,7 +28,15 @@ private struct TrackingHost: View {
                     .transition(.move(edge: .bottom))
                     .zIndex(1)
             }
+
+            if controller.phase == .completed {
+                SessionCompleteView(
+                    onAgain: { if let mode = controller.completed?.mode { controller.start(mode) } },
+                    onDone: { controller.clear() })
+                    .transition(.opacity)
+                    .zIndex(2)
+            }
         }
-        .animation(.snappy(duration: 0.3), value: controller.isActive)
+        .animation(.snappy(duration: 0.3), value: controller.phase)
     }
 }
