@@ -95,6 +95,7 @@ struct LogSheetView: View {
                                               lineWidth: selected ? 1.5 : 1))
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("logchip-\(mode.rawValue)")
             }
         }
     }
@@ -180,6 +181,7 @@ struct LogSheetView: View {
                         .background(selected ? palette.text : palette.chip, in: .capsule)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("quick-\(value)")
             }
         }
         .frame(maxWidth: .infinity)
@@ -196,6 +198,7 @@ struct LogSheetView: View {
                 .background(controller.mode.baseColor, in: .rect(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("log-save")
     }
 
     private var saveLabel: String {
@@ -215,9 +218,26 @@ struct LogSheetView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: Actions (persistence wired in the next commits)
+    // MARK: Actions
 
     private func save() {
+        if controller.editing != nil {
+            // Editing an existing entry is wired in a later commit.
+        } else {
+            let calendar = Calendar.current
+            let now = Date()
+            let start: Date
+            if controller.isYesterday {
+                let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
+                start = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: yesterday) ?? yesterday
+            } else {
+                // A "today" entry ends now, so it reads as a recent past session.
+                start = now.addingTimeInterval(-Double(controller.minutes * 60))
+            }
+            modelContext.insert(Session(mode: controller.mode, startDate: start,
+                                        durationSeconds: controller.minutes * 60, isManual: true))
+            try? modelContext.save()
+        }
         controller.isPresented = false
     }
 
