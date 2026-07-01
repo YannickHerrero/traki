@@ -16,11 +16,28 @@ struct TrakiLiveActivity: Widget {
             let mode = context.state.mode
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Label(mode.displayName, systemImage: mode.symbolName)
-                        .foregroundStyle(mode.baseColor)
+                    HStack(spacing: 8) {
+                        Image(systemName: mode.symbolName)
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(mode.baseColor)
+                        Text(mode.displayName)
+                            .font(.barlow(15, .semibold))
+                            .foregroundStyle(.white)
+                    }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    liveClock(context.state).foregroundStyle(mode.baseColor)
+                    liveClock(context.state)
+                        .font(.barlowSemi(20, .heavy))
+                        .foregroundStyle(mode.baseColor)
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    HStack(spacing: 7) {
+                        Circle().fill(mode.baseColor).frame(width: 7, height: 7)
+                            .opacity(context.state.isRunning ? 1 : 0.4)
+                        Text(context.state.isRunning ? "Tracking" : "Paused")
+                            .font(.barlow(12, .semibold))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
                 }
             } compactLeading: {
                 Image(systemName: mode.symbolName).foregroundStyle(mode.baseColor)
