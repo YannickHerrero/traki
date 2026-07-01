@@ -20,6 +20,7 @@ struct HomeScreen: View {
                 header(streak: agg.currentStreak(), now: now)
                 goalStrip(agg)
                 resumeHero(mode: lastMode, todaySeconds: todayByMode[lastMode] ?? 0)
+                modeGrid(todayByMode)
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -51,6 +52,55 @@ struct HomeScreen: View {
         .padding(.vertical, 7)
         .padding(.horizontal, 12)
         .background(LearningMode.flashcards.baseColor.opacity(0.18), in: .capsule)
+    }
+
+    // MARK: Mode grid
+
+    private func modeGrid(_ todayByMode: [LearningMode: Int]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("OR START SOMETHING NEW")
+                .font(.nunito(12, .heavy))
+                .tracking(0.5)
+                .foregroundStyle(palette.faint)
+
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                ForEach(settings.orderedActiveModes) { mode in
+                    modeCard(mode, seconds: todayByMode[mode] ?? 0)
+                }
+            }
+        }
+    }
+
+    private func modeCard(_ mode: LearningMode, seconds: Int) -> some View {
+        Button {
+            // Wired to start the session in Phase 4.
+        } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(mode.baseColor)
+                        .frame(width: 40, height: 40)
+                    Image(systemName: mode.symbolName)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(palette.bg)
+                }
+                Spacer(minLength: 0)
+                Text(mode.displayName)
+                    .font(.nunito(16, .heavy))
+                    .foregroundStyle(mode.ink(dark: palette.isDark))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Text(TrakiFormat.duration(seconds))
+                    .font(.nunito(13, .bold))
+                    .foregroundStyle(palette.faint)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 120)
+            .padding(18)
+            .background(mode.baseColor.opacity(0.15), in: .rect(cornerRadius: 24, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Resume hero
