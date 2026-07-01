@@ -16,7 +16,9 @@ public enum TrakiStore {
         FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) != nil
     }
 
-    @MainActor
+    /// Not main-actor isolated: the app builds this on the main actor and uses
+    /// `mainContext`, while the widget builds it off-main and uses a fresh
+    /// `ModelContext`. Container creation itself has no actor requirement.
     public static func makeContainer(inMemory: Bool = false) -> ModelContainer {
         let schema = Schema([Session.self])
         let configuration: ModelConfiguration
