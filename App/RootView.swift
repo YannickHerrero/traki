@@ -1,5 +1,6 @@
 import SwiftUI
 import TrakiKit
+import WidgetKit
 
 /// App root: applies the user's theme, then hosts the tabbed app.
 struct RootView: View {
@@ -51,5 +52,6 @@ private struct TrackingHost: View {
         modelContext.insert(Session(mode: done.mode, startDate: done.startDate,
                                     durationSeconds: done.seconds, isManual: false))
         try? modelContext.save()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }

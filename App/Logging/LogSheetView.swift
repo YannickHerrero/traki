@@ -1,6 +1,7 @@
 import SwiftData
 import SwiftUI
 import TrakiKit
+import WidgetKit
 
 /// The bottom sheet for logging a past session or editing an existing one:
 /// pick a mode, choose Today/Yesterday (new only), set a duration with −/+ or a
@@ -241,6 +242,7 @@ struct LogSheetView: View {
                                         durationSeconds: controller.minutes * 60, isManual: true))
             try? modelContext.save()
         }
+        WidgetCenter.shared.reloadAllTimelines()
         controller.isPresented = false
     }
 
@@ -249,6 +251,7 @@ struct LogSheetView: View {
             modelContext.delete(editing)
             try? modelContext.save()
         }
+        WidgetCenter.shared.reloadAllTimelines()
         controller.isPresented = false
     }
 }
