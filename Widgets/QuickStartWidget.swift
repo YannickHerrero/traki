@@ -36,17 +36,20 @@ struct QuickStartWidgetView: View {
     }
 
     private func chip(_ mode: LearningMode, palette: Palette) -> some View {
-        HStack(spacing: 8) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(mode.baseColor)
-                .frame(width: 9, height: 9)
-            Text(mode.compactName)
-                .font(.nunito(12.5, .heavy))
-                .foregroundStyle(mode.ink(dark: palette.isDark))
-            Spacer(minLength: 0)
+        Button(intent: StartSessionIntent(mode: mode)) {
+            HStack(spacing: 8) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(mode.baseColor)
+                    .frame(width: 9, height: 9)
+                Text(mode.compactName)
+                    .font(.nunito(12.5, .heavy))
+                    .foregroundStyle(mode.ink(dark: palette.isDark))
+                Spacer(minLength: 0)
+            }
+            .padding(11)
+            .background(mode.baseColor.opacity(0.16), in: .rect(cornerRadius: 14, style: .continuous))
         }
-        .padding(11)
-        .background(mode.baseColor.opacity(0.16), in: .rect(cornerRadius: 14, style: .continuous))
+        .buttonStyle(.plain)
     }
 }
 
