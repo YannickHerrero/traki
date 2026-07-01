@@ -216,13 +216,16 @@ struct LogSheetView: View {
                 .background(Color(hex: "E5484D").opacity(0.1), in: .rect(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("log-delete")
     }
 
     // MARK: Actions
 
     private func save() {
-        if controller.editing != nil {
-            // Editing an existing entry is wired in a later commit.
+        if let editing = controller.editing {
+            editing.mode = controller.mode
+            editing.durationSeconds = controller.minutes * 60
+            try? modelContext.save()
         } else {
             let calendar = Calendar.current
             let now = Date()
@@ -242,6 +245,10 @@ struct LogSheetView: View {
     }
 
     private func deleteEntry() {
+        if let editing = controller.editing {
+            modelContext.delete(editing)
+            try? modelContext.save()
+        }
         controller.isPresented = false
     }
 }
