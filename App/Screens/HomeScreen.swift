@@ -21,6 +21,7 @@ struct HomeScreen: View {
                 goalStrip(agg)
                 resumeHero(mode: lastMode, todaySeconds: todayByMode[lastMode] ?? 0)
                 modeGrid(todayByMode)
+                logPastButton
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -52,6 +53,29 @@ struct HomeScreen: View {
         .padding(.vertical, 7)
         .padding(.horizontal, 12)
         .background(LearningMode.flashcards.baseColor.opacity(0.18), in: .capsule)
+    }
+
+    // MARK: Log a past session
+
+    private var logPastButton: some View {
+        Button {
+            // Opens the log sheet in Phase 5.
+        } label: {
+            HStack(spacing: 9) {
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                Text("Log a past session")
+                    .font(.nunito(14, .heavy))
+            }
+            .foregroundStyle(palette.faint)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 15)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(palette.track, style: StrokeStyle(lineWidth: 2, dash: [6, 5]))
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Mode grid
