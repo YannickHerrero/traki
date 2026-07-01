@@ -30,6 +30,16 @@ Package.resolved
 *.ipa
 *.dSYM.zip
 *.dSYM
+*.xcarchive
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output/
+fastlane/README.md
+
+# Credentials — never commit signing keys
+*.p8
+*.mobileprovision
+*.p12
 
 # Source design export (extracted into reference/ instead)
 traki.zip
