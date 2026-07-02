@@ -5,7 +5,7 @@ import WidgetKit
 /// App root: applies the user's theme, then hosts the tabbed app.
 struct RootView: View {
     @Environment(AppSettings.self) private var settings
-    @State private var controller = SessionController()
+    @State private var controller = SessionController.shared
     @State private var logSheet = LogSheetController()
 
     var body: some View {

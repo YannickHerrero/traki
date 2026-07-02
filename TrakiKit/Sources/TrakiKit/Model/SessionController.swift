@@ -33,7 +33,12 @@ public final class SessionController {
         public let startDate: Date
     }
 
-    public init() {}
+    /// Shared instance used by the app *and* the Live Activity intents, so one
+    /// running session is visible to both — even if a Lock-Screen button relaunches
+    /// the app in the background. Restores any in-progress session on first access.
+    public static let shared = SessionController()
+
+    public init() { restorePersisted() }
 
     public var isActive: Bool { phase == .running || phase == .paused }
     public var isRunning: Bool { phase == .running }
@@ -46,6 +51,7 @@ public final class SessionController {
         completed = nil
         phase = .running
         startActivity()
+        persist()
     }
 
     public func pause(at date: Date = Date()) {
@@ -54,6 +60,7 @@ public final class SessionController {
         segmentStart = nil
         phase = .paused
         updateActivity()
+        persist()
     }
 
     public func resume(at date: Date = Date()) {
@@ -61,6 +68,7 @@ public final class SessionController {
         segmentStart = date
         phase = .running
         updateActivity()
+        persist()
     }
 
     public func togglePause(at date: Date = Date()) {
@@ -85,6 +93,7 @@ public final class SessionController {
         segmentStart = nil
         phase = .completed
         endActivity()
+        persist()
         return done
     }
 
@@ -97,6 +106,7 @@ public final class SessionController {
         accumulated = 0
         completed = nil
         phase = .idle
+        persist()
     }
 
     // MARK: Live Activity
@@ -117,20 +127,70 @@ public final class SessionController {
         activity = try? Activity.request(attributes: attributes, content: content)
     }
 
+    /// The held activity, or the process's current one (after a background relaunch
+    /// the intent's fresh controller won't hold a reference).
+    private var currentActivity: Activity<TrakiActivityAttributes>? {
+        activity ?? Activity<TrakiActivityAttributes>.activities.first
+    }
+
     private func updateActivity() {
-        guard let activity else { return }
+        guard let target = currentActivity else { return }
+        activity = target
         let content = ActivityContent(state: currentContentState(), staleDate: nil)
         // ActivityKit's async methods are nonisolated and Activity isn't Sendable;
         // the calls are thread-safe, so opt out of the region check for the hand-off.
-        nonisolated(unsafe) let target = activity
-        Task { await target.update(content) }
+        nonisolated(unsafe) let handoff = target
+        Task { await handoff.update(content) }
     }
 
     private func endActivity() {
-        guard let activity else { return }
+        guard let target = currentActivity else { return }
         let content = ActivityContent(state: currentContentState(), staleDate: nil)
-        nonisolated(unsafe) let target = activity
-        self.activity = nil
-        Task { await target.end(content, dismissalPolicy: .immediate) }
+        nonisolated(unsafe) let handoff = target
+        activity = nil
+        Task { await handoff.end(content, dismissalPolicy: .immediate) }
+    }
+
+    // MARK: Persistence (App Group)
+
+    private struct PersistedSession: Codable {
+        var modeRaw: String
+        var sessionStart: Date
+        var accumulated: TimeInterval
+        var segmentStart: Date?
+        var isRunning: Bool
+    }
+
+    private static let persistKey = "session.live.v1"
+
+    private var sharedDefaults: UserDefaults {
+        UserDefaults(suiteName: TrakiStore.appGroupID) ?? .standard
+    }
+
+    /// Mirrors the running session to the App Group so a Live Activity intent can
+    /// act on it even if the app was terminated. Cleared when not tracking.
+    private func persist() {
+        guard isActive, let mode, let start = sessionStart else {
+            sharedDefaults.removeObject(forKey: Self.persistKey)
+            return
+        }
+        let snapshot = PersistedSession(modeRaw: mode.rawValue, sessionStart: start,
+                                        accumulated: accumulated, segmentStart: segmentStart,
+                                        isRunning: phase == .running)
+        if let data = try? JSONEncoder().encode(snapshot) {
+            sharedDefaults.set(data, forKey: Self.persistKey)
+        }
+    }
+
+    private func restorePersisted() {
+        guard let data = sharedDefaults.data(forKey: Self.persistKey),
+              let snapshot = try? JSONDecoder().decode(PersistedSession.self, from: data),
+              let restoredMode = LearningMode(rawValue: snapshot.modeRaw) else { return }
+        mode = restoredMode
+        sessionStart = snapshot.sessionStart
+        accumulated = snapshot.accumulated
+        segmentStart = snapshot.segmentStart
+        phase = snapshot.isRunning ? .running : .paused
+        activity = Activity<TrakiActivityAttributes>.activities.first
     }
 }

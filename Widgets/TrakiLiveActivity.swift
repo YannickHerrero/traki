@@ -31,12 +31,22 @@ struct TrakiLiveActivity: Widget {
                         .foregroundStyle(mode.baseColor)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: 7) {
-                        Circle().fill(mode.baseColor).frame(width: 7, height: 7)
-                            .opacity(context.state.isRunning ? 1 : 0.4)
-                        Text(context.state.isRunning ? "Tracking" : "Paused")
-                            .font(.barlow(12, .semibold))
-                            .foregroundStyle(.white.opacity(0.6))
+                    HStack {
+                        HStack(spacing: 7) {
+                            Circle().fill(mode.baseColor).frame(width: 7, height: 7)
+                                .opacity(context.state.isRunning ? 1 : 0.4)
+                            Text(context.state.isRunning ? "Tracking" : "Paused")
+                                .font(.barlow(12, .semibold))
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
+                        Spacer()
+                        Button(intent: PauseResumeIntent()) {
+                            Label(context.state.isRunning ? "Pause" : "Resume",
+                                  systemImage: context.state.isRunning ? "pause.fill" : "play.fill")
+                                .font(.barlow(13, .bold))
+                                .foregroundStyle(mode.baseColor)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             } compactLeading: {
@@ -73,9 +83,14 @@ struct LiveActivityLockScreenView: View {
                     .foregroundStyle(mode.baseColor)
             }
             Spacer(minLength: 0)
-            if state.isRunning {
-                Circle().fill(mode.baseColor).frame(width: 10, height: 10)
+            Button(intent: PauseResumeIntent()) {
+                Image(systemName: state.isRunning ? "pause.fill" : "play.fill")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(mode.baseColor, in: .circle)
             }
+            .buttonStyle(.plain)
         }
         .padding(16)
     }
