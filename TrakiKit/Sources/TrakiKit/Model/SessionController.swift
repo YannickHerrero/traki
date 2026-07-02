@@ -120,13 +120,17 @@ public final class SessionController {
     private func updateActivity() {
         guard let activity else { return }
         let content = ActivityContent(state: currentContentState(), staleDate: nil)
-        Task { await activity.update(content) }
+        // ActivityKit's async methods are nonisolated and Activity isn't Sendable;
+        // the calls are thread-safe, so opt out of the region check for the hand-off.
+        nonisolated(unsafe) let target = activity
+        Task { await target.update(content) }
     }
 
     private func endActivity() {
         guard let activity else { return }
         let content = ActivityContent(state: currentContentState(), staleDate: nil)
-        Task { await activity.end(content, dismissalPolicy: .immediate) }
+        nonisolated(unsafe) let target = activity
         self.activity = nil
+        Task { await target.end(content, dismissalPolicy: .immediate) }
     }
 }

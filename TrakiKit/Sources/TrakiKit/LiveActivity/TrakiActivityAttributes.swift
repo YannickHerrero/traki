@@ -6,7 +6,7 @@ import Foundation
 /// Dynamic Island.
 public struct TrakiActivityAttributes: ActivityAttributes {
     /// The dynamic part, updated as the session runs, pauses and resumes.
-    public struct ContentState: Codable, Hashable {
+    public struct ContentState: Codable, Hashable, Sendable {
         public var modeRaw: String
         public var isRunning: Bool
         /// Start of the current running segment (for a live-ticking clock).
