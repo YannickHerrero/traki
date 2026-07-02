@@ -37,4 +37,38 @@ public enum TrakiStore {
             fatalError("Unable to create Traki ModelContainer: \(error)")
         }
     }
+
+    /// One-time migration from the local sandbox store to the App Group store.
+    ///
+    /// An early TestFlight build ran without the App Group and therefore wrote to
+    /// the app's local database; once the App Group is present the app reads the
+    /// shared store instead, which would otherwise look empty. This copies any
+    /// sessions from the old local store into the group store, merging by id, so
+    /// updating never loses history. Runs at most once.
+    @MainActor
+    public static func migrateLocalStoreIfNeeded(into groupContainer: ModelContainer) {
+        guard appGroupAvailable else { return }
+        let defaults = UserDefaults(suiteName: appGroupID) ?? .standard
+        let flag = "didMigrateLocalStore.v1"
+        guard !defaults.bool(forKey: flag) else { return }
+        defer { defaults.set(true, forKey: flag) }
+
+        let schema = Schema([Session.self])
+        // `.none` forces the app-local sandbox location where the old build wrote.
+        guard let localContainer = try? ModelContainer(
+            for: schema,
+            configurations: [ModelConfiguration(schema: schema, groupContainer: .none)]
+        ) else { return }
+
+        let oldSessions = (try? ModelContext(localContainer).fetch(FetchDescriptor<Session>())) ?? []
+        guard !oldSessions.isEmpty else { return }
+
+        let context = groupContainer.mainContext
+        let existingIDs = Set(((try? context.fetch(FetchDescriptor<Session>())) ?? []).map(\.id))
+        for session in oldSessions where !existingIDs.contains(session.id) {
+            context.insert(Session(id: session.id, mode: session.mode, startDate: session.startDate,
+                                   durationSeconds: session.durationSeconds, isManual: session.isManual))
+        }
+        try? context.save()
+    }
 }

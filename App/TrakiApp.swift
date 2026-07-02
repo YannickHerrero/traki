@@ -12,6 +12,7 @@ struct TrakiApp: App {
         TrakiFonts.register()
         let container = TrakiStore.makeContainer()
         self.container = container
+        TrakiStore.migrateLocalStoreIfNeeded(into: container)
         _settings = State(initialValue: AppSettings())
         #if DEBUG
         SampleData.seedIfEmpty(container.mainContext)
