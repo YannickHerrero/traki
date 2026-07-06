@@ -4,7 +4,25 @@
 
 Built natively in **SwiftUI**, faithfully reproducing the **"Playful Cards"** design from the original prototype (see [`reference/`](reference/)).
 
-![Home, Stats and the log sheet](reference/.thumbnail)
+## Demo
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.png" width="230"><br><b>Home</b></td>
+    <td align="center"><img src="docs/screenshots/timer.png" width="230"><br><b>Active Timer</b></td>
+    <td align="center"><img src="docs/screenshots/complete.png" width="230"><br><b>Session Complete</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/stats.png" width="230"><br><b>Statistics</b></td>
+    <td align="center"><img src="docs/screenshots/stats-charts.png" width="230"><br><b>Trends &amp; heatmap</b></td>
+    <td align="center"><img src="docs/screenshots/history.png" width="230"><br><b>History</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/log.png" width="230"><br><b>Log a past session</b></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
 
 ## The four learning modes
 
