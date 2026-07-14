@@ -40,6 +40,7 @@ fastlane/README.md
 *.p8
 *.mobileprovision
 *.p12
+fastlane/.env*
 
 # Source design export (extracted into reference/ instead)
 traki.zip
