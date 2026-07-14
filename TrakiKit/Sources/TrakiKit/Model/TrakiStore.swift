@@ -10,6 +10,7 @@ import SwiftData
 /// and picks up the shared store automatically once the entitlement lands.
 public enum TrakiStore {
     public static let appGroupID = "group.com.yannickherrero.traki"
+    public static let cloudKitContainerID = "iCloud.com.yannickherrero.traki"
 
     /// Whether the App Group entitlement is currently available to this process.
     public static var appGroupAvailable: Bool {
@@ -19,21 +20,40 @@ public enum TrakiStore {
     /// Not main-actor isolated: the app builds this on the main actor and uses
     /// `mainContext`, while the widget builds it off-main and uses a fresh
     /// `ModelContext`. Container creation itself has no actor requirement.
-    public static func makeContainer(inMemory: Bool = false) -> ModelContainer {
+    ///
+    /// `cloudSync` mirrors the store to the user's private CloudKit database.
+    /// Only the app passes `true`: the widget reads the same App Group store
+    /// file, but extensions lack the iCloud entitlement and can't receive the
+    /// pushes that drive sync, so they open it with CloudKit off.
+    public static func makeContainer(inMemory: Bool = false, cloudSync: Bool = false) -> ModelContainer {
         let schema = Schema([Session.self])
-        let configuration: ModelConfiguration
 
-        if inMemory {
-            configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        } else if appGroupAvailable {
-            configuration = ModelConfiguration(schema: schema, groupContainer: .identifier(appGroupID))
-        } else {
-            configuration = ModelConfiguration(schema: schema)
+        func makeConfiguration(cloudKit: ModelConfiguration.CloudKitDatabase) -> ModelConfiguration {
+            if inMemory {
+                return ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            } else if appGroupAvailable {
+                return ModelConfiguration(schema: schema, groupContainer: .identifier(appGroupID),
+                                          cloudKitDatabase: cloudKit)
+            } else {
+                return ModelConfiguration(schema: schema, cloudKitDatabase: cloudKit)
+            }
         }
 
+        let wantsCloud = cloudSync && !inMemory
         do {
-            return try ModelContainer(for: schema, configurations: [configuration])
+            return try ModelContainer(
+                for: schema,
+                configurations: [makeConfiguration(cloudKit: wantsCloud ? .private(cloudKitContainerID) : .none)]
+            )
         } catch {
+            // CloudKit can be unavailable (build signed without the iCloud
+            // entitlement, signed-out account, …) — a local-only store beats
+            // crashing, and sync picks the data up on a later launch.
+            if wantsCloud,
+               let localOnly = try? ModelContainer(for: schema,
+                                                   configurations: [makeConfiguration(cloudKit: .none)]) {
+                return localOnly
+            }
             fatalError("Unable to create Traki ModelContainer: \(error)")
         }
     }

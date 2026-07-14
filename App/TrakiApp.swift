@@ -10,7 +10,7 @@ struct TrakiApp: App {
     @MainActor
     init() {
         TrakiFonts.register()
-        let container = TrakiStore.makeContainer()
+        let container = TrakiStore.makeContainer(cloudSync: true)
         self.container = container
         TrakiStore.migrateLocalStoreIfNeeded(into: container)
         _settings = State(initialValue: AppSettings())
