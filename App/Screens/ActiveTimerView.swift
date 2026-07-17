@@ -9,6 +9,7 @@ struct ActiveTimerView: View {
     @Environment(\.palette) private var palette
     @Environment(SessionController.self) private var controller
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     /// Persist-and-complete, supplied by the root coordinator (Phase 6).
@@ -37,6 +38,8 @@ struct ActiveTimerView: View {
             .padding(.horizontal, 26)
             .padding(.top, 96)
             .padding(.bottom, 42)
+            .frame(maxWidth: horizontalSizeClass == .regular ? 760 : .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear { pulsing = true }
     }

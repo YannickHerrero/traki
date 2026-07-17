@@ -6,6 +6,7 @@ import TrakiKit
 struct SettingsScreen: View {
     @Environment(\.palette) private var palette
     @Environment(AppSettings.self) private var settings
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showCategories = false
 
     private let languages = ["Japanese", "Korean", "Mandarin", "Spanish",
@@ -21,8 +22,15 @@ struct SettingsScreen: View {
                     .font(.barlowSemi(30, .heavy))
                     .foregroundStyle(palette.text)
 
-                learningSection(settings)
-                appearanceSection(settings)
+                if horizontalSizeClass == .regular {
+                    HStack(alignment: .top, spacing: 18) {
+                        learningSection(settings).frame(maxWidth: .infinity, alignment: .topLeading)
+                        appearanceSection(settings).frame(maxWidth: .infinity, alignment: .topLeading)
+                    }
+                } else {
+                    learningSection(settings)
+                    appearanceSection(settings)
+                }
                 trackingSection(settings)
 
                 Text("Traki · v\(TrakiKit.version)")

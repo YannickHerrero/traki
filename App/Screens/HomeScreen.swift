@@ -9,6 +9,7 @@ struct HomeScreen: View {
     @Environment(AppSettings.self) private var settings
     @Environment(SessionController.self) private var controller
     @Environment(LogSheetController.self) private var logSheet
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     var body: some View {
@@ -95,13 +96,17 @@ struct HomeScreen: View {
                 .tracking(0.5)
                 .foregroundStyle(palette.faint)
 
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12),
-                                GridItem(.flexible(), spacing: 12)], spacing: 12) {
+            LazyVGrid(columns: modeGridColumns, spacing: 12) {
                 ForEach(settings.orderedActiveModes) { mode in
                     modeCard(mode, seconds: todayByMode[mode] ?? 0)
                 }
             }
         }
+    }
+
+    private var modeGridColumns: [GridItem] {
+        let count = horizontalSizeClass == .regular ? 4 : 2
+        return Array(repeating: GridItem(.flexible(), spacing: 12), count: count)
     }
 
     private func modeCard(_ mode: LearningMode, seconds: Int) -> some View {

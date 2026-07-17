@@ -9,6 +9,7 @@ struct SessionCompleteView: View {
     @Environment(\.palette) private var palette
     @Environment(SessionController.self) private var controller
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     var onAgain: () -> Void = {}
@@ -60,6 +61,8 @@ struct SessionCompleteView: View {
             .padding(.horizontal, 26)
             .padding(.top, 110)
             .padding(.bottom, 40)
+            .frame(maxWidth: horizontalSizeClass == .regular ? 700 : .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear { ringExpand = true }
     }

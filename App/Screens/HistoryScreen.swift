@@ -7,6 +7,7 @@ import TrakiKit
 struct HistoryScreen: View {
     @Environment(\.palette) private var palette
     @Environment(LogSheetController.self) private var logSheet
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
 
     var body: some View {
@@ -23,8 +24,18 @@ struct HistoryScreen: View {
                     .padding(.top, 2)
                     .padding(.bottom, 18)
 
-                ForEach(days) { day in
-                    dayGroup(day)
+                if horizontalSizeClass == .regular {
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 18),
+                                        GridItem(.flexible(), spacing: 18)],
+                              alignment: .leading, spacing: 0) {
+                        ForEach(days) { day in
+                            dayGroup(day)
+                        }
+                    }
+                } else {
+                    ForEach(days) { day in
+                        dayGroup(day)
+                    }
                 }
             }
             .padding(.horizontal, 20)

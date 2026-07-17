@@ -7,6 +7,7 @@ import TrakiKit
 /// and the charts below.
 struct StatsScreen: View {
     @Environment(\.palette) private var palette
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
     @State private var period: StatsPeriod = .day
 
@@ -22,10 +23,16 @@ struct StatsScreen: View {
 
                 periodPicker
                 totalHeader(stats)
-                last7DaysCard(agg.lastDays(7))
-                breakdownCard(agg.breakdown(period))
-                trendCard(agg.weeklyTrend(weeks: 8))
-                heatmapCard(agg.heatmap(days: 112))
+                adaptivePair {
+                    last7DaysCard(agg.lastDays(7))
+                } right: {
+                    breakdownCard(agg.breakdown(period))
+                }
+                adaptivePair {
+                    trendCard(agg.weeklyTrend(weeks: 8))
+                } right: {
+                    heatmapCard(agg.heatmap(days: 112))
+                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -52,6 +59,24 @@ struct StatsScreen: View {
         }
         .padding(3)
         .background(palette.track, in: .rect(cornerRadius: 13, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func adaptivePair<Left: View, Right: View>(
+        @ViewBuilder left: () -> Left,
+        @ViewBuilder right: () -> Right
+    ) -> some View {
+        if horizontalSizeClass == .regular {
+            HStack(alignment: .top, spacing: 16) {
+                left().frame(maxWidth: .infinity, alignment: .topLeading)
+                right().frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 16) {
+                left()
+                right()
+            }
+        }
     }
 
     // MARK: Last 7 days
