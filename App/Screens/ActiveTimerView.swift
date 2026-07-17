@@ -29,6 +29,7 @@ struct ActiveTimerView: View {
             VStack(alignment: .leading, spacing: 0) {
                 statusRow(mode: mode)
                 modeRow(mode: mode, earlierToday: earlierToday)
+                pictureInPictureRow
 
                 Spacer(minLength: 0)
                 clockBlock(mode: mode, dark: dark, earlierToday: earlierToday)
@@ -77,24 +78,37 @@ struct ActiveTimerView: View {
                 .font(.barlow(13, .bold))
                 .tracking(1.4)
                 .foregroundStyle(palette.muted)
-            Spacer()
-            Button(action: pictureInPicture.start) {
-                Image(systemName: "pip.enter")
-                    .font(.system(size: 17, weight: .bold))
-                    .foregroundStyle(palette.text)
-                    .frame(width: 44, height: 44)
-                    .background(palette.track, in: .circle)
-            }
-            .buttonStyle(.plain)
-            .disabled(!pictureInPicture.canStart)
-            .accessibilityIdentifier("timer-pip")
-            .accessibilityLabel("Start Picture in Picture")
-            .accessibilityHint(!pictureInPicture.isSupported
-                               ? "Picture in Picture is unavailable on this device"
-                               : pictureInPicture.isPossible
-                               ? "Shows the timer in a floating window"
-                               : "Picture in Picture is preparing")
         }
+    }
+
+    private var pictureInPictureRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "pip.enter")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(palette.muted)
+                .frame(width: 34, height: 34)
+                .background(palette.track, in: .circle)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("PiP when leaving Traki")
+                    .font(.barlow(15, .bold))
+                    .foregroundStyle(palette.text)
+                Text(pictureInPicture.isSupported
+                     ? "Shows the timer when you switch apps"
+                     : "Unavailable on this device")
+                    .font(.barlow(12.5, .regular))
+                    .foregroundStyle(palette.faint)
+            }
+            Spacer()
+            Toggle("PiP when leaving Traki", isOn: Binding(
+                get: { pictureInPicture.automaticStartEnabled },
+                set: { pictureInPicture.setAutomaticStartEnabled($0) }
+            ))
+            .labelsHidden()
+            .disabled(!pictureInPicture.canEnableAutomaticStart)
+            .accessibilityIdentifier("timer-pip-auto")
+            .accessibilityHint("Starts Picture in Picture when Traki moves to the background")
+        }
+        .padding(.top, 21)
     }
 
     private func modeRow(mode: LearningMode, earlierToday: Int) -> some View {

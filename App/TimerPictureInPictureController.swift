@@ -44,10 +44,11 @@ final class TimerPictureInPictureController: NSObject {
 
     private(set) var isActive = false
     private(set) var isPossible = false
+    private(set) var automaticStartEnabled = false
     private(set) var errorMessage: String?
 
     var isSupported: Bool { AVPictureInPictureController.isPictureInPictureSupported() }
-    var canStart: Bool { isSupported && sessionController.isActive && isPossible && !isActive }
+    var canEnableAutomaticStart: Bool { isSupported && sessionController.isActive }
 
     init(sessionController: SessionController) {
         self.sessionController = sessionController
@@ -68,6 +69,7 @@ final class TimerPictureInPictureController: NSObject {
             playbackDelegate: self)
         let controller = AVPictureInPictureController(contentSource: contentSource)
         controller.delegate = self
+        controller.canStartPictureInPictureAutomaticallyFromInline = automaticStartEnabled
         pictureInPictureController = controller
         possibleObservation = controller.observe(\.isPictureInPicturePossible, options: [.initial, .new]) { [weak self] controller, _ in
             let isPossible = controller.isPictureInPicturePossible
@@ -77,23 +79,31 @@ final class TimerPictureInPictureController: NSObject {
         }
     }
 
-    func start() {
-        prepare()
-        guard sessionController.isActive else { return }
-        guard let pictureInPictureController, isPossible else {
-            errorMessage = "Picture in Picture is still preparing. Please try again in a moment."
+    /// Arms or disarms AVKit's system-managed automatic PiP transition. PiP is
+    /// started by iOS as the app leaves the foreground; the app must not attempt
+    /// to force itself into the background.
+    func setAutomaticStartEnabled(_ enabled: Bool) {
+        guard enabled else {
+            automaticStartEnabled = false
+            pictureInPictureController?.canStartPictureInPictureAutomaticallyFromInline = false
+            if !isActive { stopRendering() }
+            return
+        }
+        guard canEnableAutomaticStart else {
+            errorMessage = "Picture in Picture is unavailable on this device."
             return
         }
 
+        automaticStartEnabled = true
         errorMessage = nil
+        prepare()
+        pictureInPictureController?.canStartPictureInPictureAutomaticallyFromInline = true
         beginRendering()
-        pictureInPictureController.startPictureInPicture()
     }
 
     /// Stops PiP rendering without changing the running session itself.
     func stop() {
-        renderTimer?.invalidate()
-        renderTimer = nil
+        stopRendering()
         pictureInPictureController?.stopPictureInPicture()
     }
 
@@ -108,6 +118,7 @@ final class TimerPictureInPictureController: NSObject {
         sourceView.displayLayer.sampleBufferRenderer.flush(removingDisplayedImage: true, completionHandler: nil)
         isActive = false
         isPossible = false
+        automaticStartEnabled = false
         presentationTime = .zero
     }
 
@@ -116,12 +127,17 @@ final class TimerPictureInPictureController: NSObject {
     }
 
     private func beginRendering() {
-        renderTimer?.invalidate()
+        guard renderTimer == nil else { return }
         renderTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.enqueueFrame()
             }
         }
+    }
+
+    private func stopRendering() {
+        renderTimer?.invalidate()
+        renderTimer = nil
     }
 
     private func enqueueFrame(force: Bool = false) {
@@ -227,16 +243,14 @@ extension TimerPictureInPictureController: @preconcurrency AVPictureInPictureCon
     }
 
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
-        renderTimer?.invalidate()
-        renderTimer = nil
         isActive = false
+        if !automaticStartEnabled { stopRendering() }
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController,
                                     failedToStartPictureInPictureWithError error: Error) {
-        renderTimer?.invalidate()
-        renderTimer = nil
         isActive = false
+        if !automaticStartEnabled { stopRendering() }
         errorMessage = error.localizedDescription
     }
 
