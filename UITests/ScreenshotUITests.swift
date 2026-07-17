@@ -32,6 +32,7 @@ final class ScreenshotUITests: XCTestCase {
         XCTAssertTrue(app.buttons["done"].waitForExistence(timeout: 10))
         snapshot("03-complete")
         app.buttons["done"].tap()
+        XCTAssertTrue(app.buttons["log-past"].waitForExistence(timeout: 5))
 
         // Statistics — top (bars) and scrolled (trend + heatmap).
         app.buttons["tab-stats"].tap()
