@@ -5,8 +5,15 @@ import WidgetKit
 /// App root: applies the user's theme, then hosts the tabbed app.
 struct RootView: View {
     @Environment(AppSettings.self) private var settings
-    @State private var controller = SessionController.shared
+    @State private var controller: SessionController
+    @State private var pictureInPicture: TimerPictureInPictureController
     @State private var logSheet = LogSheetController()
+
+    init() {
+        let controller = SessionController.shared
+        _controller = State(initialValue: controller)
+        _pictureInPicture = State(initialValue: TimerPictureInPictureController(sessionController: controller))
+    }
 
     var body: some View {
         TrakiThemedRoot(theme: settings.theme) {
@@ -25,6 +32,7 @@ struct RootView: View {
     private var appContent: some View {
         TrackingHost()
             .environment(controller)
+            .environment(pictureInPicture)
             .environment(logSheet)
     }
 }
@@ -33,6 +41,7 @@ struct RootView: View {
 /// then Session Complete) above it.
 private struct TrackingHost: View {
     @Environment(SessionController.self) private var controller
+    @Environment(TimerPictureInPictureController.self) private var pictureInPicture
     @Environment(AppSettings.self) private var settings
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -62,6 +71,9 @@ private struct TrackingHost: View {
         }
         .onChange(of: settings.showLiveActivity) { _, enabled in
             controller.liveActivitiesEnabled = enabled
+        }
+        .onChange(of: controller.isActive) { _, isActive in
+            if !isActive { pictureInPicture.stop() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { consumePendingStart() }

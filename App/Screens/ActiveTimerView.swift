@@ -8,6 +8,7 @@ import TrakiKit
 struct ActiveTimerView: View {
     @Environment(\.palette) private var palette
     @Environment(SessionController.self) private var controller
+    @Environment(TimerPictureInPictureController.self) private var pictureInPicture
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(sort: \Session.startDate, order: .reverse) private var sessions: [Session]
@@ -69,6 +70,21 @@ struct ActiveTimerView: View {
                 .font(.barlow(13, .bold))
                 .tracking(1.4)
                 .foregroundStyle(palette.muted)
+            Spacer()
+            Button(action: pictureInPicture.start) {
+                Image(systemName: "pip.enter")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(palette.text)
+                    .frame(width: 44, height: 44)
+                    .background(palette.track, in: .circle)
+            }
+            .buttonStyle(.plain)
+            .disabled(!pictureInPicture.canStart)
+            .accessibilityIdentifier("timer-pip")
+            .accessibilityLabel("Start Picture in Picture")
+            .accessibilityHint(pictureInPicture.isSupported
+                               ? "Shows the timer in a floating window"
+                               : "Picture in Picture is unavailable on this device")
         }
     }
 
@@ -167,6 +183,7 @@ struct ActiveTimerView: View {
     SampleData.seedIfEmpty(container.mainContext)
     return ActiveTimerView()
         .environment(controller)
+        .environment(TimerPictureInPictureController(sessionController: controller))
         .environment(\.palette, .dark)
         .modelContainer(container)
 }
