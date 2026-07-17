@@ -36,14 +36,14 @@ Built natively in **SwiftUI**, faithfully reproducing the **"Playful Cards"** de
 ## Features
 
 - **Home (Playful Cards)** — greeting, day-streak, daily-goal bar, a resume hero for your last mode, four mode cards with today's time, and "Log a past session".
-- **Tracking flow** — immersive Active Timer (mode-tinted, live clock, projected daily total, pause/resume, Picture in Picture) → Session Complete (duration + three stats, Go again / Done).
+- **Tracking flow** — immersive Active Timer (mode-tinted, live clock, projected daily total, pause/resume) → Session Complete (duration + three stats, Go again / Done).
 - **Logging & editing** — log a past session (mode, Today/Yesterday, ± stepper, quick-picks); press-and-hold any History entry to edit its mode/duration or delete it.
 - **History** — every session grouped by day, newest-first, with day totals.
 - **Statistics** — Day/Month/Year totals with change vs. the previous period, last-7-days stacked bars, by-mode breakdown, an 8-week trend line, and a 112-day consistency heatmap.
 - **Settings** — target language, daily goal, active categories; Light/Dark/System theme; auto-pause, Live Activity and round-to-minute toggles.
 - **Widgets** — Home small (today), Home medium (quick start, this-week heatmap), Lock Screen circular (today ring).
 - **App Intents** — widget quick-start buttons open the app straight into a running session.
-- **Live Activity + Dynamic Island** — a running session on the Lock Screen with a live-ticking clock and mode color.\n- **Picture in Picture** — an active timer can float above other apps; its system controls pause/resume tracking or return to Traki.
+- **Live Activity + Dynamic Island** — a running session on the Lock Screen with a live-ticking clock and mode color.
 
 Everything is **derived from individual `Session` rows**, so adding, editing or deleting an entry keeps every total consistent — the product's core guarantee.
 
