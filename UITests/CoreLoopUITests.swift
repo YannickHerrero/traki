@@ -21,8 +21,8 @@ final class CoreLoopUITests: XCTestCase {
         // Active Timer: the Stop & save control appears.
         let stop = app.buttons["stop-save"]
         XCTAssertTrue(stop.waitForExistence(timeout: 10), "Active Timer should appear after tapping a mode")
-        XCTAssertTrue(app.buttons["timer-pip"].exists,
-                      "Active Timer should expose the Picture in Picture control")
+        XCTAssertTrue(app.switches["timer-pip-auto"].exists,
+                      "Active Timer should expose the automatic Picture in Picture toggle")
 
         // Let the stopwatch run briefly, then stop.
         sleep(2)
