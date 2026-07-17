@@ -43,6 +43,13 @@ struct ActiveTimerView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear { pulsing = true }
+        .alert("Picture in Picture unavailable",
+               isPresented: Binding(get: { pictureInPicture.errorMessage != nil },
+                                    set: { if !$0 { pictureInPicture.dismissError() } })) {
+            Button("OK", role: .cancel) { pictureInPicture.dismissError() }
+        } message: {
+            Text(pictureInPicture.errorMessage ?? "Picture in Picture could not start.")
+        }
     }
 
     // MARK: Pieces
@@ -82,9 +89,11 @@ struct ActiveTimerView: View {
             .disabled(!pictureInPicture.canStart)
             .accessibilityIdentifier("timer-pip")
             .accessibilityLabel("Start Picture in Picture")
-            .accessibilityHint(pictureInPicture.isSupported
+            .accessibilityHint(!pictureInPicture.isSupported
+                               ? "Picture in Picture is unavailable on this device"
+                               : pictureInPicture.isPossible
                                ? "Shows the timer in a floating window"
-                               : "Picture in Picture is unavailable on this device")
+                               : "Picture in Picture is preparing")
         }
     }
 

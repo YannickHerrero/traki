@@ -30,10 +30,20 @@ struct RootView: View {
     }
 
     private var appContent: some View {
-        TrackingHost()
-            .environment(controller)
-            .environment(pictureInPicture)
-            .environment(logSheet)
+        ZStack {
+            TrackingHost()
+                .environment(controller)
+                .environment(pictureInPicture)
+                .environment(logSheet)
+
+            // AVKit requires the sample-buffer source to be attached to the
+            // window before it can offer Picture in Picture on device.
+            TimerPictureInPictureSource(pictureInPicture: pictureInPicture)
+                .frame(width: 1, height: 1)
+                .opacity(0.01)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
     }
 }
 
@@ -67,13 +77,18 @@ private struct TrackingHost: View {
         .animation(.snappy(duration: 0.3), value: controller.phase)
         .onAppear {
             controller.liveActivitiesEnabled = settings.showLiveActivity
+            pictureInPicture.prepare()
             consumePendingStart()
         }
         .onChange(of: settings.showLiveActivity) { _, enabled in
             controller.liveActivitiesEnabled = enabled
         }
         .onChange(of: controller.isActive) { _, isActive in
-            if !isActive { pictureInPicture.stop() }
+            if isActive {
+                pictureInPicture.prepare()
+            } else {
+                pictureInPicture.invalidate()
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { consumePendingStart() }

@@ -2,84 +2,131 @@ import AVFoundation
 import AVKit
 import CoreMedia
 import Observation
+import SwiftUI
 import TrakiKit
 import UIKit
+
+/// A view-backed source is required for the sample-buffer PiP content source to
+/// become eligible on a physical device. It is visually insignificant in Traki,
+/// while keeping the renderer attached to the app's window.
+final class TimerPictureInPictureSourceView: UIView {
+    override class var layerClass: AnyClass { AVSampleBufferDisplayLayer.self }
+
+    var displayLayer: AVSampleBufferDisplayLayer { layer as! AVSampleBufferDisplayLayer }
+}
+
+struct TimerPictureInPictureSource: UIViewRepresentable {
+    let pictureInPicture: TimerPictureInPictureController
+
+    func makeUIView(context: Context) -> TimerPictureInPictureSourceView {
+        pictureInPicture.sourceView
+    }
+
+    func updateUIView(_ uiView: TimerPictureInPictureSourceView, context: Context) {}
+}
 
 /// Owns the system Picture in Picture presentation for the active timer.
 ///
 /// PiP has no SwiftUI content source. This coordinator renders a compact timer
-/// into an `AVSampleBufferDisplayLayer` and maps PiP's standard playback control
-/// onto the shared `SessionController`, which remains the sole timer state.
+/// into a view-backed `AVSampleBufferDisplayLayer` and maps PiP's standard
+/// playback control onto the shared `SessionController`, which remains the sole
+/// timer state.
 @MainActor
 @Observable
 final class TimerPictureInPictureController: NSObject {
+    let sourceView = TimerPictureInPictureSourceView()
+
     private let sessionController: SessionController
     private var pictureInPictureController: AVPictureInPictureController?
-    private var displayLayer: AVSampleBufferDisplayLayer?
+    private var possibleObservation: NSKeyValueObservation?
     private var renderTimer: Timer?
     private var presentationTime: CMTime = .zero
 
     private(set) var isActive = false
-    private(set) var lastError: Error?
+    private(set) var isPossible = false
+    private(set) var errorMessage: String?
 
     var isSupported: Bool { AVPictureInPictureController.isPictureInPictureSupported() }
-    var canStart: Bool { isSupported && sessionController.isActive && !isActive }
+    var canStart: Bool { isSupported && sessionController.isActive && isPossible && !isActive }
 
     init(sessionController: SessionController) {
         self.sessionController = sessionController
         super.init()
+        sourceView.displayLayer.videoGravity = .resizeAspect
     }
 
-    func start() {
-        guard canStart else { return }
-        lastError = nil
+    /// Prepares the view-backed source before the user taps PiP. AVKit updates
+    /// `isPictureInPicturePossible` asynchronously once that source is eligible.
+    func prepare() {
+        guard sessionController.isActive, isSupported else { return }
+        guard pictureInPictureController == nil else { return }
 
-        let displayLayer = AVSampleBufferDisplayLayer()
-        displayLayer.videoGravity = .resizeAspect
-        self.displayLayer = displayLayer
         presentationTime = .zero
-        enqueueFrame()
-
+        enqueueFrame(force: true)
         let contentSource = AVPictureInPictureController.ContentSource(
-            sampleBufferDisplayLayer: displayLayer,
+            sampleBufferDisplayLayer: sourceView.displayLayer,
             playbackDelegate: self)
         let controller = AVPictureInPictureController(contentSource: contentSource)
         controller.delegate = self
         pictureInPictureController = controller
-        beginRendering()
-        controller.startPictureInPicture()
+        possibleObservation = controller.observe(\.isPictureInPicturePossible, options: [.initial, .new]) { [weak self] controller, _ in
+            let isPossible = controller.isPictureInPicturePossible
+            Task { @MainActor [weak self] in
+                self?.isPossible = isPossible
+            }
+        }
     }
 
-    /// Stops the PiP surface without changing the running session itself.
+    func start() {
+        prepare()
+        guard sessionController.isActive else { return }
+        guard let pictureInPictureController, isPossible else {
+            errorMessage = "Picture in Picture is still preparing. Please try again in a moment."
+            return
+        }
+
+        errorMessage = nil
+        beginRendering()
+        pictureInPictureController.startPictureInPicture()
+    }
+
+    /// Stops PiP rendering without changing the running session itself.
     func stop() {
         renderTimer?.invalidate()
         renderTimer = nil
-        if pictureInPictureController?.isPictureInPictureActive == true {
-            pictureInPictureController?.stopPictureInPicture()
-        } else {
-            tearDown()
-        }
+        pictureInPictureController?.stopPictureInPicture()
+    }
+
+    /// Releases PiP resources once tracking ends. This never saves or pauses a
+    /// session; that remains the root coordinator's responsibility.
+    func invalidate() {
+        stop()
+        possibleObservation?.invalidate()
+        possibleObservation = nil
+        pictureInPictureController?.delegate = nil
+        pictureInPictureController = nil
+        sourceView.displayLayer.sampleBufferRenderer.flush(removingDisplayedImage: true, completionHandler: nil)
+        isActive = false
+        isPossible = false
+        presentationTime = .zero
+    }
+
+    func dismissError() {
+        errorMessage = nil
     }
 
     private func beginRendering() {
         renderTimer?.invalidate()
         renderTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.enqueueFrame()
+            Task { @MainActor [weak self] in
+                self?.enqueueFrame()
+            }
         }
     }
 
-    private func tearDown() {
-        renderTimer?.invalidate()
-        renderTimer = nil
-        pictureInPictureController?.delegate = nil
-        pictureInPictureController = nil
-        displayLayer?.flushAndRemoveImage()
-        displayLayer = nil
-        isActive = false
-    }
-
-    private func enqueueFrame() {
-        guard let displayLayer, displayLayer.isReadyForMoreMediaData else { return }
+    private func enqueueFrame(force: Bool = false) {
+        let renderer = sourceView.displayLayer.sampleBufferRenderer
+        guard force || renderer.isReadyForMoreMediaData else { return }
         guard let pixelBuffer = makePixelBuffer() else { return }
 
         var formatDescription: CMVideoFormatDescription?
@@ -102,8 +149,15 @@ final class TimerPictureInPictureController: NSObject {
             sampleTiming: &timing,
             sampleBufferOut: &sampleBuffer
         ) == noErr, let sampleBuffer else { return }
-        displayLayer.enqueue(sampleBuffer)
+        markForImmediateDisplay(sampleBuffer)
+        renderer.enqueue(sampleBuffer)
         pictureInPictureController?.invalidatePlaybackState()
+    }
+
+    private func markForImmediateDisplay(_ sampleBuffer: CMSampleBuffer) {
+        guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: true),
+              let attachment = (attachments as NSArray).firstObject as? NSMutableDictionary else { return }
+        attachment[kCMSampleAttachmentKey_DisplayImmediately] = true
     }
 
     private func makePixelBuffer() -> CVPixelBuffer? {
@@ -173,13 +227,17 @@ extension TimerPictureInPictureController: @preconcurrency AVPictureInPictureCon
     }
 
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
-        tearDown()
+        renderTimer?.invalidate()
+        renderTimer = nil
+        isActive = false
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController,
                                     failedToStartPictureInPictureWithError error: Error) {
-        lastError = error
-        tearDown()
+        renderTimer?.invalidate()
+        renderTimer = nil
+        isActive = false
+        errorMessage = error.localizedDescription
     }
 
     func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController,
@@ -197,7 +255,7 @@ extension TimerPictureInPictureController: @preconcurrency AVPictureInPictureSam
         } else {
             sessionController.pause()
         }
-        enqueueFrame()
+        enqueueFrame(force: true)
         pictureInPictureController.invalidatePlaybackState()
     }
 
